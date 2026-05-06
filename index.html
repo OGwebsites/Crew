@@ -64,7 +64,27 @@
         input, textarea { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 12px; padding: 1rem; color: white; outline: none; transition: 0.3s; }
         input:focus, textarea:focus { border-color: var(--accent); background: rgba(255,255,255,0.08); }
 
-        #paypal-button-container { margin-top: 1.5rem; min-height: 150px; }
+        /* DISABLED STATE FOR BUTTONS */
+        #paypal-button-container { 
+            margin-top: 1.5rem; 
+            min-height: 150px; 
+            transition: 0.5s opacity;
+        }
+        
+        .buttons-disabled {
+            opacity: 0.3;
+            pointer-events: none; /* User cannot click */
+            filter: grayscale(1);
+        }
+
+        .validation-msg {
+            color: #ff4d4d;
+            font-size: 0.75rem;
+            margin-top: 10px;
+            text-align: center;
+            display: block;
+        }
+
         footer { padding: 3rem; color: var(--text-dim); font-size: 0.85rem; }
     </style>
 </head>
@@ -108,18 +128,19 @@
 
                 <div class="input-wrapper">
                     <label>Full Name</label>
-                    <input type="text" id="clientName" placeholder="Enter your name" required>
+                    <input type="text" id="clientName" placeholder="Enter your name" oninput="validateFields()" required>
                 </div>
                 <div class="input-wrapper">
                     <label>Email Address</label>
-                    <input type="email" id="clientEmail" placeholder="email@example.com" required>
+                    <input type="email" id="clientEmail" placeholder="email@example.com" oninput="validateFields()" required>
                 </div>
                 <div class="input-wrapper">
                     <label>Project Vision</label>
                     <textarea id="projectVision" rows="3" placeholder="Describe your goals..."></textarea>
                 </div>
                 
-                <div id="paypal-button-container"></div>
+                <span id="validationMsg" class="validation-msg">Please enter your name and email to enable payment.</span>
+                <div id="paypal-button-container" class="buttons-disabled"></div>
             </form>
         </div>
     </main>
@@ -145,6 +166,22 @@
         let currentTier = 'Basic';
         let currentCycle = 'monthly';
 
+        // NEW: Function to check if fields are filled
+        function validateFields() {
+            const name = document.getElementById('clientName').value.trim();
+            const email = document.getElementById('clientEmail').value.trim();
+            const btnContainer = document.getElementById('paypal-button-container');
+            const msg = document.getElementById('validationMsg');
+
+            if (name.length > 2 && email.includes('@')) {
+                btnContainer.classList.remove('buttons-disabled');
+                msg.style.display = 'none';
+            } else {
+                btnContainer.classList.add('buttons-disabled');
+                msg.style.display = 'block';
+            }
+        }
+
         function selectTier(tier, element) {
             currentTier = tier;
             document.querySelectorAll('.tier-card').forEach(card => card.classList.remove('selected'));
@@ -163,25 +200,12 @@
         }
 
         paypal.Buttons({
-            style: { 
-                shape: 'pill', 
-                color: 'gold', 
-                layout: 'vertical', 
-                label: 'subscribe' 
-            },
+            style: { shape: 'pill', color: 'gold', layout: 'vertical', label: 'subscribe' },
             createSubscription: function(data, actions) {
-                const name = document.getElementById('clientName').value.trim();
-                const email = document.getElementById('clientEmail').value.trim();
-                
-                if (!name || !email) {
-                    alert("Please enter your name and email to continue.");
-                    return; // Return empty to prevent window opening
-                }
-
                 const selectedPlan = PLAN_IDS[currentCycle][currentTier];
                 
                 if (selectedPlan.startsWith("REPLACE_")) {
-                    alert("This tier configuration is not finished yet. Try 'Basic Monthly'.");
+                    alert("This plan is not yet configured.");
                     return;
                 }
                 
@@ -214,18 +238,10 @@
                     }]
                 };
 
-                fetch(DISCORD_WEBHOOK, { 
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' }, 
-                    body: JSON.stringify(payload) 
-                });
-
-                alert("Success! Your subscription is active. ID: " + data.subscriptionID);
+                fetch(DISCORD_WEBHOOK, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                alert("Success! ID: " + data.subscriptionID);
                 document.getElementById('orderForm').reset();
-            },
-            onError: function(err) {
-                console.error("PayPal Error:", err);
-                alert("The PayPal window encountered an error. This usually happens if you are logged into the merchant account while trying to pay.");
+                validateFields(); // Reset buttons to disabled state
             }
         }).render('#paypal-button-container');
     </script>
