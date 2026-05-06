@@ -6,8 +6,7 @@
     <title>OG Websites | Premium Development</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
     
-    <!-- PAYPAL SDK: Replace 'YOUR_CLIENT_ID' with your actual Client ID from developer.paypal.com -->
-    <script src="https://www.paypal.com/sdk/js?client-id=YOUR_CLIENT_ID&vault=true&intent=subscription"></script>
+    <script src="https://www.paypal.com/sdk/js?client-id=AbvoNQiduLHQzN2OpamkoIUbGPPMLCjiiIWabtl3UZ-wMY4IuWnNcT1KtPG65JbNfMLDXFwoIMleQGfR&vault=true&intent=subscription" data-sdk-integration-source="button-factory"></script>
     
     <style>
         :root {
@@ -42,11 +41,11 @@
         .page-view { width: 100%; display: flex; flex-direction: column; align-items: center; padding-bottom: 50px; }
 
         header { text-align: center; padding: 2rem 1rem; }
-        header h1 { font-size: 3rem; letter-spacing: -2px; }
-        header p { color: var(--text-dim); }
+        header h1 { font-size: 3.5rem; letter-spacing: -2px; margin-bottom: 0.5rem; }
+        header p { color: var(--text-dim); font-size: 1.1rem; }
 
         .billing-toggle { display: flex; gap: 15px; margin: 2rem 0; background: var(--glass); padding: 8px; border-radius: 50px; border: 1px solid var(--glass-border); }
-        .toggle-btn { padding: 8px 20px; border-radius: 50px; border: none; background: transparent; color: var(--text-dim); cursor: pointer; font-weight: 700; transition: 0.3s; }
+        .toggle-btn { padding: 10px 24px; border-radius: 50px; border: none; background: transparent; color: var(--text-dim); cursor: pointer; font-weight: 700; transition: 0.3s; }
         .toggle-btn.active { background: var(--accent); color: white; box-shadow: 0 4px 15px var(--accent-glow); }
 
         .order-card {
@@ -57,12 +56,13 @@
         .tier-selection-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 2rem; }
         .tier-card { background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); padding: 1.2rem 0.5rem; border-radius: 16px; text-align: center; cursor: pointer; transition: 0.3s; }
         .tier-card.selected { border-color: var(--accent); background: rgba(61, 90, 254, 0.1); }
-        .tier-name { display: block; font-weight: 800; font-size: 0.9rem; }
+        .tier-name { display: block; font-weight: 800; font-size: 0.9rem; margin-bottom: 4px; }
         .tier-price { color: var(--text-dim); font-size: 0.8rem; }
 
         .input-wrapper { margin-bottom: 1.5rem; }
         label { display: block; font-size: 0.7rem; color: var(--text-dim); margin-bottom: 0.6rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
-        input, textarea { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 12px; padding: 1rem; color: white; }
+        input, textarea { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 12px; padding: 1rem; color: white; outline: none; transition: 0.3s; }
+        input:focus, textarea:focus { border-color: var(--accent); background: rgba(255,255,255,0.08); }
 
         #paypal-button-container { margin-top: 1.5rem; min-height: 150px; }
         footer { padding: 3rem; color: var(--text-dim); font-size: 0.85rem; }
@@ -129,17 +129,16 @@
     <script>
         const DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1501632580058091570/OHmK0Vr6ZqpfQ5RtS9obRk6ulU5fj_L8xr_80LI9vlSKgmXV1FHIHDZEHRqG4iouNdPQ";
         
-        // REPLACE THESE WITH YOUR ACTUAL PLAN IDs FROM PAYPAL
         const PLAN_IDS = {
             monthly: {
-                Basic: "P-YOUR_MONTHLY_BASIC_ID",
-                Advanced: "P-YOUR_MONTHLY_ADVANCED_ID",
-                Premium: "P-YOUR_MONTHLY_PREMIUM_ID"
+                Basic: "P-69P3981420001113SNH5YMUI",
+                Advanced: "REPLACE_WITH_ADV_M",
+                Premium: "REPLACE_WITH_PREM_M"
             },
             yearly: {
-                Basic: "P-YOUR_YEARLY_BASIC_ID",
-                Advanced: "P-YOUR_YEARLY_ADVANCED_ID",
-                Premium: "P-YOUR_YEARLY_PREMIUM_ID"
+                Basic: "REPLACE_WITH_BASIC_Y",
+                Advanced: "REPLACE_WITH_ADV_Y",
+                Premium: "REPLACE_WITH_PREM_Y"
             }
         };
 
@@ -164,34 +163,52 @@
         }
 
         paypal.Buttons({
-            style: { shape: 'pill', color: 'blue', layout: 'vertical', label: 'subscribe' },
+            style: { 
+                shape: 'pill', 
+                color: 'gold', 
+                layout: 'vertical', 
+                label: 'subscribe' 
+            },
             createSubscription: function(data, actions) {
-                // Ensure form fields are valid before opening PayPal
-                const name = document.getElementById('clientName').value;
-                const email = document.getElementById('clientEmail').value;
+                const name = document.getElementById('clientName').value.trim();
+                const email = document.getElementById('clientEmail').value.trim();
                 
                 if (!name || !email) {
-                    alert("Please provide your name and email to proceed.");
+                    alert("Please enter your name and email to continue.");
+                    return; // Return empty to prevent window opening
+                }
+
+                const selectedPlan = PLAN_IDS[currentCycle][currentTier];
+                
+                if (selectedPlan.startsWith("REPLACE_")) {
+                    alert("This tier configuration is not finished yet. Try 'Basic Monthly'.");
                     return;
                 }
                 
                 return actions.subscription.create({
-                    'plan_id': PLAN_IDS[currentCycle][currentTier]
+                    'plan_id': selectedPlan,
+                    'application_context': {
+                        'shipping_preference': 'NO_SHIPPING',
+                        'user_action': 'SUBSCRIBE_NOW'
+                    }
                 });
             },
             onApprove: function(data, actions) {
-                // Sent to Discord ONLY after payment is confirmed
+                const clientName = document.getElementById('clientName').value;
+                const clientEmail = document.getElementById('clientEmail').value;
+                const vision = document.getElementById('projectVision').value || "No vision provided";
+
                 const payload = {
-                    username: "OG Sub Bot",
+                    username: "OG Business Manager",
                     embeds: [{
-                        title: "✅ NEW ACTIVE SUBSCRIPTION",
+                        title: "✅ Subscription Confirmed",
                         color: 4021246,
                         fields: [
-                            { name: "Client", value: document.getElementById('clientName').value, inline: true },
+                            { name: "Client", value: clientName, inline: true },
+                            { name: "Email", value: clientEmail, inline: true },
                             { name: "Plan", value: `${currentTier} (${currentCycle})`, inline: true },
-                            { name: "Email", value: document.getElementById('clientEmail').value },
-                            { name: "Subscription ID", value: data.subscriptionID },
-                            { name: "Vision", value: document.getElementById('projectVision').value || "No details" }
+                            { name: "ID", value: data.subscriptionID },
+                            { name: "Vision", value: vision }
                         ],
                         timestamp: new Date()
                     }]
@@ -203,12 +220,12 @@
                     body: JSON.stringify(payload) 
                 });
 
-                alert("Success! Your subscription is active. We will reach out to your email shortly.");
+                alert("Success! Your subscription is active. ID: " + data.subscriptionID);
                 document.getElementById('orderForm').reset();
             },
             onError: function(err) {
-                console.error(err);
-                alert("Payment could not be processed. Please check your details.");
+                console.error("PayPal Error:", err);
+                alert("The PayPal window encountered an error. This usually happens if you are logged into the merchant account while trying to pay.");
             }
         }).render('#paypal-button-container');
     </script>
