@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OG Websites|</title>
+    <title>OG Websites | Premium Development</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
     
     <!-- PayPal SDK -->
@@ -20,7 +20,6 @@
             --text-main: #ffffff;
             --text-dim: #94a3b8;
             --error: #ff4d4d;
-            /* Gradient Variable */
             --text-gradient: linear-gradient(135deg, #ffffff 30%, #87ceeb 100%);
         }
 
@@ -41,7 +40,6 @@
             align-items: center;
         }
 
-        /* Gradient Text Utility */
         .gradient-text {
             background: var(--text-gradient);
             -webkit-background-clip: text;
@@ -62,11 +60,17 @@
             border-radius: 20px; 
         }
 
-        .support-btn { 
+        .nav-buttons { display: flex; gap: 0.8rem; flex-wrap: wrap; justify-content: center; align-items: center; }
+
+        .btn-secondary { 
             background: var(--glass); border: 1px solid var(--glass-border); color: white; 
-            padding: 8px 24px; border-radius: 50px; cursor: pointer; transition: 0.3s; 
+            padding: 8px 20px; border-radius: 50px; cursor: pointer; transition: 0.3s; 
+            display: flex; align-items: center; gap: 8px; font-size: 0.9rem;
+            height: 40px; /* Uniform height */
         }
-        .support-btn:hover { background: var(--accent-light); color: #000; box-shadow: 0 0 20px var(--accent-glow); transform: translateY(-2px); }
+        .btn-secondary:hover { background: var(--accent-light); color: #000; box-shadow: 0 0 20px var(--accent-glow); transform: translateY(-2px); }
+        .btn-secondary img { height: 18px; width: 18px; filter: invert(1); }
+        .btn-secondary:hover img { filter: invert(0); }
 
         .page-view { width: 100%; display: flex; flex-direction: column; align-items: center; padding-bottom: 50px; }
         .hidden { display: none; }
@@ -76,13 +80,19 @@
 
         .billing-toggle {
             display: flex; background: var(--glass); border: 1px solid var(--glass-border);
-            padding: 4px; border-radius: 50px; margin-bottom: 2rem; width: fit-content;
+            padding: 4px; border-radius: 50px; margin-bottom: 1rem; width: fit-content;
         }
         .toggle-opt {
             padding: 8px 20px; border-radius: 50px; cursor: pointer; font-size: 0.9rem; transition: 0.3s;
             color: var(--text-dim); font-weight: 600;
         }
         .toggle-opt.active { background: var(--accent-light); color: #000; }
+
+        .view-details-link {
+            color: var(--accent-light); font-size: 0.9rem; text-decoration: none; margin-bottom: 2rem;
+            cursor: pointer; opacity: 0.8; transition: 0.3s; border-bottom: 1px solid transparent;
+        }
+        .view-details-link:hover { opacity: 1; border-bottom: 1px solid var(--accent-light); }
 
         .glass-card { 
             background: var(--glass); backdrop-filter: blur(10px); border: 1px solid var(--glass-border); 
@@ -97,7 +107,11 @@
             padding: 1.2rem 0.5rem; border-radius: 16px; text-align: center; cursor: pointer; transition: 0.4s; 
         }
         .tier-card.selected { border-color: var(--accent-light); background: rgba(135, 206, 235, 0.1); box-shadow: 0 0 15px var(--accent-glow); }
-        .tier-card.selected b { background: var(--text-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        .details-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        .details-table th { color: var(--accent-light); padding: 15px; text-align: left; border-bottom: 1px solid var(--glass-border); }
+        .details-table td { padding: 15px; border-bottom: 1px solid var(--glass-border); color: var(--text-dim); font-size: 0.9rem; }
+        .check-icon { color: #00ff88; margin-right: 8px; }
 
         .input-wrapper { margin-bottom: 1.5rem; }
         input, textarea { 
@@ -117,6 +131,7 @@
         @media (max-width: 600px) {
             .tier-selection-grid { grid-template-columns: 1fr; }
             header h1 { font-size: 2.5rem; }
+            .details-table th, .details-table td { padding: 10px 5px; font-size: 0.8rem; }
         }
     </style>
 </head>
@@ -127,9 +142,20 @@
             <img src="https://cdn.discordapp.com/attachments/1101409428944724000/1501626773056520413/ChatGPT_Image_May_5_2026_05_15_21_PM.png?ex=69fd6b29&is=69fc19a9&hm=36f8adee7102fb1f826975352a95257e7d2c60064701f8f7223a9f06032103e5&" alt="OG Websites" class="nav-logo-img">
             <div class="gradient-text" style="font-weight:800; font-size:1.8rem; letter-spacing: 3px;">OG WEBSITES</div>
         </div>
-        <button class="support-btn" onclick="toggleSupport()">Contact Support</button>
+        <div class="nav-buttons">
+            <!-- HOME BUTTON -->
+            <button class="btn-secondary" onclick="showPage('main-page')">
+                <img src="https://img.icons8.com/material-rounded/48/home.png" alt="home">
+                Home
+            </button>
+            <!-- COMPARE PLANS BUTTON -->
+            <button class="btn-secondary" onclick="showPage('details-page')">Compare Plans</button>
+            <!-- SUPPORT BUTTON -->
+            <button class="btn-secondary" onclick="showPage('support-page')">Support</button>
+        </div>
     </nav>
 
+    <!-- MAIN PURCHASE PAGE -->
     <main id="main-page" class="page-view">
         <header>
             <h1 class="gradient-text">Scale Your Brand</h1>
@@ -170,6 +196,67 @@
         </div>
     </main>
 
+    <!-- DETAILS PAGE -->
+    <main id="details-page" class="page-view hidden">
+        <header>
+            <h1 class="gradient-text">Plan Comparison</h1>
+            <p style="color: var(--text-dim)">Choose the depth of development you need</p>
+        </header>
+
+        <div class="glass-card" style="max-width: 800px;">
+            <table class="details-table">
+                <thead>
+                    <tr>
+                        <th>Feature</th>
+                        <th>Basic</th>
+                        <th>Advanced</th>
+                        <th>Premium</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Pages</td>
+                        <td>Up to 3</td>
+                        <td>Up to 8</td>
+                        <td>Unlimited</td>
+                    </tr>
+                    <tr>
+                        <td>Custom UI/UX</td>
+                        <td><span class="check-icon">✓</span></td>
+                        <td><span class="check-icon">✓</span></td>
+                        <td><span class="check-icon">✓</span></td>
+                    </tr>
+                    <tr>
+                        <td>SEO Optimization</td>
+                        <td>Basic</td>
+                        <td>Advanced</td>
+                        <td>Full Audit</td>
+                    </tr>
+                    <tr>
+                        <td>E-Commerce</td>
+                        <td>-</td>
+                        <td>Up to 10 products</td>
+                        <td>Fully Integrated</td>
+                    </tr>
+                    <tr>
+                        <td>Support</td>
+                        <td>Email</td>
+                        <td>Priority Email</td>
+                        <td>24/7 Discord/Phone</td>
+                    </tr>
+                    <tr>
+                        <td>Maintenance</td>
+                        <td>Monthly</td>
+                        <td>Weekly</td>
+                        <td>Daily Updates</td>
+                    </tr>
+                </tbody>
+            </table>
+            <button class="submit-btn" style="margin-top: 2rem;" onclick="showPage('main-page')">Back to Checkout</button>
+        </div>
+    </main>
+
+    <!-- SUPPORT PAGE -->
     <main id="support-page" class="page-view hidden">
         <header><h1 class="gradient-text">Support Center</h1></header>
         <div class="glass-card">
@@ -200,11 +287,7 @@
         function showPage(id) {
             document.querySelectorAll('.page-view').forEach(p => p.classList.add('hidden'));
             document.getElementById(id).classList.remove('hidden');
-        }
-
-        function toggleSupport() {
-            const isSupport = !document.getElementById('support-page').classList.contains('hidden');
-            showPage(isSupport ? 'main-page' : 'support-page');
+            window.scrollTo(0,0);
         }
 
         function selectTier(t, el) {
@@ -220,6 +303,24 @@
             if (name.length > 1 && email.includes('@') && details.length > 5) {
                 document.getElementById('paypal-button-container').classList.add('active');
             }
+        }
+
+        function sendSupportMessage(event) {
+            event.preventDefault();
+            const payload = {
+                embeds: [{
+                    title: "📩 NEW SUPPORT TICKET",
+                    color: 3447003,
+                    fields: [
+                        { name: "Project", value: document.getElementById('supportProjectName').value },
+                        { name: "Email", value: document.getElementById('supportEmail').value },
+                        { name: "Issue", value: document.getElementById('supportDescription').value }
+                    ]
+                }]
+            };
+            fetch(SUPPORT_WEBHOOK, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload)});
+            alert("Ticket Submitted!");
+            showPage('main-page');
         }
 
         paypal.Buttons({
