@@ -6,26 +6,34 @@
     <title>OG Websites | Premium Development</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
     
+    <!-- PayPal SDK -->
     <script src="https://www.paypal.com/sdk/js?client-id=AbvoNQiduLHQzN2OpamkoIUbGPPMLCjiiIWabtl3UZ-wMY4IuWnNcT1KtPG65JbNfMLDXFwoIMleQGfR&vault=true&intent=subscription" data-sdk-integration-source="button-factory"></script>
     
     <style>
         :root {
             --bg: #05070a;
-            --accent: #3d5afe;
-            --accent-glow: rgba(61, 90, 254, 0.3);
+            --accent: #00d2ff;
+            --accent-light: #87ceeb;
+            --accent-glow: rgba(135, 206, 235, 0.4);
             --glass: rgba(255, 255, 255, 0.03);
             --glass-border: rgba(255, 255, 255, 0.08);
             --text-main: #ffffff;
             --text-dim: #94a3b8;
+            --error: #ff4d4d;
+            /* Gradient Variable */
+            --text-gradient: linear-gradient(135deg, #ffffff 30%, #87ceeb 100%);
         }
+
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
 
         body {
             background-color: var(--bg);
             background-image: 
-                radial-gradient(circle at 10% 20%, rgba(61, 90, 254, 0.15) 0%, transparent 40%),
-                radial-gradient(circle at 90% 80%, rgba(168, 85, 247, 0.1) 0%, transparent 40%);
+                radial-gradient(circle at 10% 20%, rgba(0, 210, 255, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(135, 206, 235, 0.08) 0%, transparent 40%);
             color: var(--text-main);
             min-height: 100vh;
             display: flex;
@@ -33,215 +41,199 @@
             align-items: center;
         }
 
-        nav { width: 100%; padding: 2rem; display: flex; justify-content: space-between; align-items: center; max-width: 1200px; }
-        .nav-container { display: flex; align-items: center; cursor: pointer; }
-        .nav-logo-img { height: 70px; filter: drop-shadow(0 0 15px var(--accent-glow)); margin-right: 10px; border-radius: 12px; }
-        .logo-text { font-weight: 800; font-size: 1.8rem; background: linear-gradient(to right, #fff, var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        /* Gradient Text Utility */
+        .gradient-text {
+            background: var(--text-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: inline-block;
+        }
+
+        nav { 
+            width: 100%; padding: 2rem; display: flex; flex-direction: column; align-items: center; gap: 1.5rem;
+            animation: fadeInDown 0.8s ease;
+        }
+
+        .nav-container { display: flex; flex-direction: column; align-items: center; gap: 12px; cursor: pointer; transition: 0.3s; }
+        .nav-logo-img { 
+            height: 100px; 
+            filter: drop-shadow(0 0 20px var(--accent-glow)); 
+            border-radius: 20px; 
+        }
+
+        .support-btn { 
+            background: var(--glass); border: 1px solid var(--glass-border); color: white; 
+            padding: 8px 24px; border-radius: 50px; cursor: pointer; transition: 0.3s; 
+        }
+        .support-btn:hover { background: var(--accent-light); color: #000; box-shadow: 0 0 20px var(--accent-glow); transform: translateY(-2px); }
 
         .page-view { width: 100%; display: flex; flex-direction: column; align-items: center; padding-bottom: 50px; }
+        .hidden { display: none; }
 
-        header { text-align: center; padding: 2rem 1rem; }
-        header h1 { font-size: 3.5rem; letter-spacing: -2px; margin-bottom: 0.5rem; }
-        header p { color: var(--text-dim); font-size: 1.1rem; }
+        header { text-align: center; padding: 2rem 1rem; animation: fadeInUp 0.8s ease; }
+        header h1 { font-size: 3.5rem; letter-spacing: -2px; margin-bottom: 0.5rem; font-weight: 800; }
 
-        .billing-toggle { display: flex; gap: 15px; margin: 2rem 0; background: var(--glass); padding: 8px; border-radius: 50px; border: 1px solid var(--glass-border); }
-        .toggle-btn { padding: 10px 24px; border-radius: 50px; border: none; background: transparent; color: var(--text-dim); cursor: pointer; font-weight: 700; transition: 0.3s; }
-        .toggle-btn.active { background: var(--accent); color: white; box-shadow: 0 4px 15px var(--accent-glow); }
+        .billing-toggle {
+            display: flex; background: var(--glass); border: 1px solid var(--glass-border);
+            padding: 4px; border-radius: 50px; margin-bottom: 2rem; width: fit-content;
+        }
+        .toggle-opt {
+            padding: 8px 20px; border-radius: 50px; cursor: pointer; font-size: 0.9rem; transition: 0.3s;
+            color: var(--text-dim); font-weight: 600;
+        }
+        .toggle-opt.active { background: var(--accent-light); color: #000; }
 
-        .order-card {
-            background: var(--glass); backdrop-filter: blur(12px); border: 1px solid var(--glass-border);
-            border-radius: 24px; padding: 2.5rem; width: 90%; max-width: 600px;
+        .glass-card { 
+            background: var(--glass); backdrop-filter: blur(10px); border: 1px solid var(--glass-border); 
+            border-radius: 24px; padding: 2.5rem; width: 92%; max-width: 600px;
+            animation: fadeInUp 1s ease;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
         .tier-selection-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 2rem; }
-        .tier-card { background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); padding: 1.2rem 0.5rem; border-radius: 16px; text-align: center; cursor: pointer; transition: 0.3s; }
-        .tier-card.selected { border-color: var(--accent); background: rgba(61, 90, 254, 0.1); }
-        .tier-name { display: block; font-weight: 800; font-size: 0.9rem; margin-bottom: 4px; }
-        .tier-price { color: var(--text-dim); font-size: 0.8rem; }
+        .tier-card { 
+            background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); 
+            padding: 1.2rem 0.5rem; border-radius: 16px; text-align: center; cursor: pointer; transition: 0.4s; 
+        }
+        .tier-card.selected { border-color: var(--accent-light); background: rgba(135, 206, 235, 0.1); box-shadow: 0 0 15px var(--accent-glow); }
+        .tier-card.selected b { background: var(--text-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
         .input-wrapper { margin-bottom: 1.5rem; }
-        label { display: block; font-size: 0.7rem; color: var(--text-dim); margin-bottom: 0.6rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
-        input, textarea { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 12px; padding: 1rem; color: white; outline: none; transition: 0.3s; }
-        input:focus, textarea:focus { border-color: var(--accent); background: rgba(255,255,255,0.08); }
-
-        /* DISABLED STATE FOR BUTTONS */
-        #paypal-button-container { 
-            margin-top: 1.5rem; 
-            min-height: 150px; 
-            transition: 0.5s opacity;
+        input, textarea { 
+            width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); 
+            border-radius: 12px; padding: 1rem; color: white; transition: 0.3s; font-size: 16px;
         }
-        
-        .buttons-disabled {
-            opacity: 0.3;
-            pointer-events: none; /* User cannot click */
-            filter: grayscale(1);
+        input:focus, textarea:focus { border-color: var(--accent-light); outline: none; background: rgba(255,255,255,0.08); }
+
+        #paypal-button-container { transition: 0.3s; opacity: 0.4; pointer-events: none; margin-top: 1.5rem; }
+        #paypal-button-container.active { opacity: 1; pointer-events: auto; }
+
+        .submit-btn { 
+            width: 100%; padding: 1rem; border-radius: 12px; border: none; 
+            background: var(--accent-light); color: #000; font-weight: 800; cursor: pointer; transition: 0.3s; 
         }
 
-        .validation-msg {
-            color: #ff4d4d;
-            font-size: 0.75rem;
-            margin-top: 10px;
-            text-align: center;
-            display: block;
+        @media (max-width: 600px) {
+            .tier-selection-grid { grid-template-columns: 1fr; }
+            header h1 { font-size: 2.5rem; }
         }
-
-        footer { padding: 3rem; color: var(--text-dim); font-size: 0.85rem; }
     </style>
 </head>
 <body>
 
     <nav>
-        <div class="nav-container">
-            <img src="https://cdn.discordapp.com/attachments/1101409428944724000/1501626773056520413/ChatGPT_Image_May_5_2026_05_15_21_PM.png?ex=69fcc269&is=69fb70e9&hm=6d85bf462ff361fb2de21fdcc3a85046544e4da6dbc71da62a51a2b9a0ba537c&" alt="OG Logo" class="nav-logo-img">
-            <div class="logo-text">Websites</div>
+        <div class="nav-container" onclick="showPage('main-page')">
+            <img src="https://cdn.discordapp.com/attachments/1101409428944724000/1501626773056520413/ChatGPT_Image_May_5_2026_05_15_21_PM.png?ex=69fd6b29&is=69fc19a9&hm=36f8adee7102fb1f826975352a95257e7d2c60064701f8f7223a9f06032103e5&" alt="OG Websites" class="nav-logo-img">
+            <div class="gradient-text" style="font-weight:800; font-size:1.8rem; letter-spacing: 3px;">OG WEBSITES</div>
         </div>
+        <button class="support-btn" onclick="toggleSupport()">Contact Support</button>
     </nav>
 
-    <main class="page-view">
+    <main id="main-page" class="page-view">
         <header>
-            <h1>Scale Your Brand</h1>
-            <p>Select your tier and subscribe to lock in your project.</p>
+            <h1 class="gradient-text">Scale Your Brand</h1>
+            <p style="color: var(--text-dim)">Professional Web Development Solutions</p>
         </header>
 
         <div class="billing-toggle">
-            <button class="toggle-btn active" id="monthlyBtn" onclick="setBilling('monthly')">Monthly</button>
-            <button class="toggle-btn" id="yearlyBtn" onclick="setBilling('yearly')">Yearly (-20%)</button>
+            <div class="toggle-opt active" id="btn-monthly" onclick="setBilling('monthly')">Monthly</div>
+            <div class="toggle-opt" id="btn-yearly" onclick="setBilling('yearly')">Yearly <span style="color: #00ff88; font-size: 0.7rem;">-20%</span></div>
         </div>
 
-        <div class="order-card">
+        <div class="glass-card">
             <form id="orderForm">
-                <label>Select Plan Tier</label>
                 <div class="tier-selection-grid">
-                    <div class="tier-card selected" onclick="selectTier('Basic', this)" data-m="19.99" data-y="15.99">
-                        <span class="tier-name">Basic</span>
-                        <span class="tier-price">$19.99</span>
+                    <div class="tier-card selected" onclick="selectTier('Basic', this)">
+                        <b>Basic</b><br><span class="price-label" style="color: var(--accent-light)">$19.99</span>
                     </div>
-                    <div class="tier-card" onclick="selectTier('Advanced', this)" data-m="39.99" data-y="31.99">
-                        <span class="tier-name">Advanced</span>
-                        <span class="tier-price">$39.99</span>
+                    <div class="tier-card" onclick="selectTier('Advanced', this)">
+                        <b>Advanced</b><br><span class="price-label" style="color: var(--accent-light)">$39.99</span>
                     </div>
-                    <div class="tier-card" onclick="selectTier('Premium', this)" data-m="79.99" data-y="63.99">
-                        <span class="tier-name">Premium</span>
-                        <span class="tier-price">$79.99</span>
+                    <div class="tier-card" onclick="selectTier('Premium', this)">
+                        <b>Premium</b><br><span class="price-label" style="color: var(--accent-light)">$79.99</span>
                     </div>
                 </div>
 
                 <div class="input-wrapper">
-                    <label>Full Name</label>
-                    <input type="text" id="clientName" placeholder="Enter your name" oninput="validateFields()" required>
+                    <input type="text" id="clientName" placeholder="Full Name" oninput="checkSilentValidation()">
                 </div>
                 <div class="input-wrapper">
-                    <label>Email Address</label>
-                    <input type="email" id="clientEmail" placeholder="email@example.com" oninput="validateFields()" required>
+                    <input type="email" id="clientEmail" placeholder="Gmail Address" oninput="checkSilentValidation()">
                 </div>
                 <div class="input-wrapper">
-                    <label>Project Vision</label>
-                    <textarea id="projectVision" rows="3" placeholder="Describe your goals..."></textarea>
+                    <textarea id="projectDetails" rows="3" placeholder="Describe your vision..." oninput="checkSilentValidation()"></textarea>
                 </div>
-                
-                <span id="validationMsg" class="validation-msg">Please enter your name and email to enable payment.</span>
-                <div id="paypal-button-container" class="buttons-disabled"></div>
+
+                <div id="paypal-button-container"></div>
             </form>
         </div>
     </main>
 
-    <footer>&copy; 2026 OG Websites Development.</footer>
+    <main id="support-page" class="page-view hidden">
+        <header><h1 class="gradient-text">Support Center</h1></header>
+        <div class="glass-card">
+            <form onsubmit="sendSupportMessage(event)">
+                <input type="text" id="supportProjectName" placeholder="Project Name" style="margin-bottom:1rem" required>
+                <input type="email" id="supportEmail" placeholder="Gmail Address" style="margin-bottom:1rem" required>
+                <textarea id="supportDescription" rows="5" placeholder="How can we help?" style="margin-bottom:1.5rem" required></textarea>
+                <button type="submit" class="submit-btn">Submit Ticket</button>
+            </form>
+        </div>
+    </main>
 
     <script>
-        const DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1501632580058091570/OHmK0Vr6ZqpfQ5RtS9obRk6ulU5fj_L8xr_80LI9vlSKgmXV1FHIHDZEHRqG4iouNdPQ";
+        const ORDER_WEBHOOK = "https://discord.com/api/webhooks/1501632580058091570/OHmK0Vr6ZqpfQ5RtS9obRk6ulU5fj_L8xr_80LI9vlSKgmXV1FHIHDZEHRqG4iouNdPQ";
+        const SUPPORT_WEBHOOK = "https://discord.com/api/webhooks/1501632588157288458/9TThDm--A1c1LD2kDodKSvATT4ZikRc8lfPiUrhLbaStTLeqQvIrwEnosMtV91n8BXLb";
         
-        const PLAN_IDS = {
-            monthly: {
-                Basic: "P-69P3981420001113SNH5YMUI",
-                Advanced: "P-3XB82390WU7228036NH5Y2IQ",
-                Premium: "P-3W021136F9626704VNH5Y3QI"
-            },
-            yearly: {
-                Basic: "REPLACE_WITH_BASIC_Y",
-                Advanced: "REPLACE_WITH_ADV_Y",
-                Premium: "REPLACE_WITH_PREM_Y"
-            }
-        };
-
         let currentTier = 'Basic';
-        let currentCycle = 'monthly';
-
-        // NEW: Function to check if fields are filled
-        function validateFields() {
-            const name = document.getElementById('clientName').value.trim();
-            const email = document.getElementById('clientEmail').value.trim();
-            const btnContainer = document.getElementById('paypal-button-container');
-            const msg = document.getElementById('validationMsg');
-
-            if (name.length > 2 && email.includes('@')) {
-                btnContainer.classList.remove('buttons-disabled');
-                msg.style.display = 'none';
-            } else {
-                btnContainer.classList.add('buttons-disabled');
-                msg.style.display = 'block';
-            }
-        }
-
-        function selectTier(tier, element) {
-            currentTier = tier;
-            document.querySelectorAll('.tier-card').forEach(card => card.classList.remove('selected'));
-            element.classList.add('selected');
-        }
+        let billingCycle = 'monthly';
 
         function setBilling(cycle) {
-            currentCycle = cycle;
-            document.getElementById('monthlyBtn').classList.toggle('active', cycle === 'monthly');
-            document.getElementById('yearlyBtn').classList.toggle('active', cycle === 'yearly');
-            
-            document.querySelectorAll('.tier-card').forEach(card => {
-                const price = cycle === 'monthly' ? card.dataset.m : card.dataset.y;
-                card.querySelector('.tier-price').innerText = `$${price}`;
-            });
+            billingCycle = cycle;
+            document.getElementById('btn-monthly').classList.toggle('active', cycle === 'monthly');
+            document.getElementById('btn-yearly').classList.toggle('active', cycle === 'yearly');
+            const prices = { monthly: ['$19.99', '$39.99', '$79.99'], yearly: ['$15.99/mo', '$31.99/mo', '$63.99/mo'] };
+            document.querySelectorAll('.price-label').forEach((el, i) => { el.innerText = prices[cycle][i]; });
+        }
+
+        function showPage(id) {
+            document.querySelectorAll('.page-view').forEach(p => p.classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
+        }
+
+        function toggleSupport() {
+            const isSupport = !document.getElementById('support-page').classList.contains('hidden');
+            showPage(isSupport ? 'main-page' : 'support-page');
+        }
+
+        function selectTier(t, el) {
+            currentTier = t;
+            document.querySelectorAll('.tier-card').forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
+        }
+
+        function checkSilentValidation() {
+            const name = document.getElementById('clientName').value.trim();
+            const email = document.getElementById('clientEmail').value.trim();
+            const details = document.getElementById('projectDetails').value.trim();
+            if (name.length > 1 && email.includes('@') && details.length > 5) {
+                document.getElementById('paypal-button-container').classList.add('active');
+            }
         }
 
         paypal.Buttons({
-            style: { shape: 'pill', color: 'gold', layout: 'vertical', label: 'subscribe' },
             createSubscription: function(data, actions) {
-                const selectedPlan = PLAN_IDS[currentCycle][currentTier];
-                
-                if (selectedPlan.startsWith("REPLACE_")) {
-                    alert("This plan is not yet configured.");
-                    return;
-                }
-                
-                return actions.subscription.create({
-                    'plan_id': selectedPlan,
-                    'application_context': {
-                        'shipping_preference': 'NO_SHIPPING',
-                        'user_action': 'SUBSCRIBE_NOW'
-                    }
-                });
+                const planIds = {
+                    monthly: { Basic: "P-69P3981420001113SNH5YMUI", Advanced: "P-3XB82390WU7228036NH5Y2IQ", Premium: "P-3W021136F9626704VNH5Y3QI" },
+                    yearly: { Basic: "YOUR_YEARLY_ID", Advanced: "YOUR_YEARLY_ID", Premium: "YOUR_YEARLY_ID" }
+                };
+                return actions.subscription.create({ 'plan_id': planIds[billingCycle][currentTier] });
             },
             onApprove: function(data, actions) {
-                const clientName = document.getElementById('clientName').value;
-                const clientEmail = document.getElementById('clientEmail').value;
-                const vision = document.getElementById('projectVision').value || "No vision provided";
-
-                const payload = {
-                    username: "OG Business Manager",
-                    embeds: [{
-                        title: "✅ Subscription Confirmed",
-                        color: 4021246,
-                        fields: [
-                            { name: "Client", value: clientName, inline: true },
-                            { name: "Email", value: clientEmail, inline: true },
-                            { name: "Plan", value: `${currentTier} (${currentCycle})`, inline: true },
-                            { name: "ID", value: data.subscriptionID },
-                            { name: "Vision", value: vision }
-                        ],
-                        timestamp: new Date()
-                    }]
-                };
-
-                fetch(DISCORD_WEBHOOK, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                alert("Success! ID: " + data.subscriptionID);
-                document.getElementById('orderForm').reset();
-                validateFields(); // Reset buttons to disabled state
+                const payload = { embeds: [{ title: "💰 NEW ORDER", color: 5763719, fields: [{ name: "Client", value: document.getElementById('clientName').value }, { name: "Tier", value: `${currentTier} (${billingCycle})` }] }] };
+                fetch(ORDER_WEBHOOK, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload)});
+                alert("Order Successful!");
             }
         }).render('#paypal-button-container');
     </script>
