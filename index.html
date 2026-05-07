@@ -6,7 +6,6 @@
     <title>OG Websites | Premium Development</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
     
-    <!-- PayPal SDK -->
     <script src="https://www.paypal.com/sdk/js?client-id=AbvoNQiduLHQzN2OpamkoIUbGPPMLCjiiIWabtl3UZ-wMY4IuWnNcT1KtPG65JbNfMLDXFwoIMleQGfR&vault=true&intent=subscription" data-sdk-integration-source="button-factory"></script>
     
     <style>
@@ -53,7 +52,11 @@
             animation: fadeInDown 0.8s ease;
         }
 
-        .nav-container { display: flex; flex-direction: column; align-items: center; gap: 12px; cursor: pointer; transition: 0.3s; }
+        .nav-container { 
+            display: flex; flex-direction: column; align-items: center; gap: 12px; cursor: pointer; transition: 0.3s; 
+        }
+        .nav-container:hover { transform: scale(1.02); }
+
         .nav-logo-img { 
             height: 100px; 
             filter: drop-shadow(0 0 20px var(--accent-glow)); 
@@ -66,7 +69,7 @@
             background: var(--glass); border: 1px solid var(--glass-border); color: white; 
             padding: 8px 20px; border-radius: 50px; cursor: pointer; transition: 0.3s; 
             display: flex; align-items: center; gap: 8px; font-size: 0.9rem;
-            height: 40px; /* Uniform height */
+            height: 40px; 
         }
         .btn-secondary:hover { background: var(--accent-light); color: #000; box-shadow: 0 0 20px var(--accent-glow); transform: translateY(-2px); }
         .btn-secondary img { height: 18px; width: 18px; filter: invert(1); }
@@ -87,12 +90,6 @@
             color: var(--text-dim); font-weight: 600;
         }
         .toggle-opt.active { background: var(--accent-light); color: #000; }
-
-        .view-details-link {
-            color: var(--accent-light); font-size: 0.9rem; text-decoration: none; margin-bottom: 2rem;
-            cursor: pointer; opacity: 0.8; transition: 0.3s; border-bottom: 1px solid transparent;
-        }
-        .view-details-link:hover { opacity: 1; border-bottom: 1px solid var(--accent-light); }
 
         .glass-card { 
             background: var(--glass); backdrop-filter: blur(10px); border: 1px solid var(--glass-border); 
@@ -143,19 +140,15 @@
             <div class="gradient-text" style="font-weight:800; font-size:1.8rem; letter-spacing: 3px;">OG WEBSITES</div>
         </div>
         <div class="nav-buttons">
-            <!-- HOME BUTTON -->
             <button class="btn-secondary" onclick="showPage('main-page')">
                 <img src="https://img.icons8.com/material-rounded/48/home.png" alt="home">
                 Home
             </button>
-            <!-- COMPARE PLANS BUTTON -->
             <button class="btn-secondary" onclick="showPage('details-page')">Compare Plans</button>
-            <!-- SUPPORT BUTTON -->
             <button class="btn-secondary" onclick="showPage('support-page')">Support</button>
         </div>
     </nav>
 
-    <!-- MAIN PURCHASE PAGE -->
     <main id="main-page" class="page-view">
         <header>
             <h1 class="gradient-text">Scale Your Brand</h1>
@@ -185,7 +178,7 @@
                     <input type="text" id="clientName" placeholder="Full Name" oninput="checkSilentValidation()">
                 </div>
                 <div class="input-wrapper">
-                    <input type="email" id="clientEmail" placeholder="Gmail Address" oninput="checkSilentValidation()">
+                    <input type="email" id="clientEmail" placeholder="Email Address" oninput="checkSilentValidation()">
                 </div>
                 <div class="input-wrapper">
                     <textarea id="projectDetails" rows="3" placeholder="Describe your vision..." oninput="checkSilentValidation()"></textarea>
@@ -196,13 +189,11 @@
         </div>
     </main>
 
-    <!-- DETAILS PAGE -->
     <main id="details-page" class="page-view hidden">
         <header>
             <h1 class="gradient-text">Plan Comparison</h1>
             <p style="color: var(--text-dim)">Choose the depth of development you need</p>
         </header>
-
         <div class="glass-card" style="max-width: 800px;">
             <table class="details-table">
                 <thead>
@@ -227,28 +218,16 @@
                         <td><span class="check-icon">✓</span></td>
                     </tr>
                     <tr>
-                        <td>SEO Optimization</td>
+                        <td>SEO</td>
                         <td>Basic</td>
                         <td>Advanced</td>
                         <td>Full Audit</td>
                     </tr>
                     <tr>
-                        <td>E-Commerce</td>
-                        <td>-</td>
-                        <td>Up to 10 products</td>
-                        <td>Fully Integrated</td>
-                    </tr>
-                    <tr>
                         <td>Support</td>
                         <td>Email</td>
                         <td>Priority Email</td>
-                        <td>24/7 Discord/Phone</td>
-                    </tr>
-                    <tr>
-                        <td>Maintenance</td>
-                        <td>Monthly</td>
-                        <td>Weekly</td>
-                        <td>Daily Updates</td>
+                        <td>24/7 Priority</td>
                     </tr>
                 </tbody>
             </table>
@@ -256,13 +235,12 @@
         </div>
     </main>
 
-    <!-- SUPPORT PAGE -->
     <main id="support-page" class="page-view hidden">
         <header><h1 class="gradient-text">Support Center</h1></header>
         <div class="glass-card">
             <form onsubmit="sendSupportMessage(event)">
                 <input type="text" id="supportProjectName" placeholder="Project Name" style="margin-bottom:1rem" required>
-                <input type="email" id="supportEmail" placeholder="Gmail Address" style="margin-bottom:1rem" required>
+                <input type="email" id="supportEmail" placeholder="Email Address" style="margin-bottom:1rem" required>
                 <textarea id="supportDescription" rows="5" placeholder="How can we help?" style="margin-bottom:1.5rem" required></textarea>
                 <button type="submit" class="submit-btn">Submit Ticket</button>
             </form>
@@ -280,7 +258,10 @@
             billingCycle = cycle;
             document.getElementById('btn-monthly').classList.toggle('active', cycle === 'monthly');
             document.getElementById('btn-yearly').classList.toggle('active', cycle === 'yearly');
-            const prices = { monthly: ['$19.99', '$39.99', '$79.99'], yearly: ['$59.99/yr', '$119.99/yr', '$159.99/yr'] };
+            const prices = { 
+                monthly: ['$19.99', '$39.99', '$79.99'], 
+                yearly: ['$59.99/yr', '$119.99/yr', '$159.99/yr'] 
+            };
             document.querySelectorAll('.price-label').forEach((el, i) => { el.innerText = prices[cycle][i]; });
         }
 
@@ -300,8 +281,12 @@
             const name = document.getElementById('clientName').value.trim();
             const email = document.getElementById('clientEmail').value.trim();
             const details = document.getElementById('projectDetails').value.trim();
+            const paypalBtn = document.getElementById('paypal-button-container');
+            
             if (name.length > 1 && email.includes('@') && details.length > 5) {
-                document.getElementById('paypal-button-container').classList.add('active');
+                paypalBtn.classList.add('active');
+            } else {
+                paypalBtn.classList.remove('active');
             }
         }
 
@@ -332,7 +317,16 @@
                 return actions.subscription.create({ 'plan_id': planIds[billingCycle][currentTier] });
             },
             onApprove: function(data, actions) {
-                const payload = { embeds: [{ title: "💰 NEW ORDER", color: 5763719, fields: [{ name: "Client", value: document.getElementById('clientName').value }, { name: "Tier", value: `${currentTier} (${billingCycle})` }] }] };
+                const payload = { 
+                    embeds: [{ 
+                        title: "💰 NEW ORDER", 
+                        color: 5763719, 
+                        fields: [
+                            { name: "Client", value: document.getElementById('clientName').value }, 
+                            { name: "Tier", value: `${currentTier} (${billingCycle})` }
+                        ] 
+                    }] 
+                };
                 fetch(ORDER_WEBHOOK, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload)});
                 alert("Order Successful!");
             }
