@@ -193,7 +193,7 @@
             billingCycle = cycle;
             document.getElementById('btn-monthly').classList.toggle('active', cycle === 'monthly');
             document.getElementById('btn-yearly').classList.toggle('active', cycle === 'yearly');
-            const prices = { monthly: ['$19.99', '$39.99', '$79.99'], yearly: ['$15.99/mo', '$31.99/mo', '$63.99/mo'] };
+            const prices = { monthly: ['$19.99', '$39.99', '$79.99'], yearly: ['$59.99/yr', '$119.99/yr', '$159.99/yr'] };
             document.querySelectorAll('.price-label').forEach((el, i) => { el.innerText = prices[cycle][i]; });
         }
 
