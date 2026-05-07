@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OG Websites | Premium Development</title>
+    <title>OG Websites|</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
     
     <!-- PayPal SDK -->
@@ -226,7 +226,7 @@
             createSubscription: function(data, actions) {
                 const planIds = {
                     monthly: { Basic: "P-69P3981420001113SNH5YMUI", Advanced: "P-3XB82390WU7228036NH5Y2IQ", Premium: "P-3W021136F9626704VNH5Y3QI" },
-                    yearly: { Basic: "YOUR_YEARLY_ID", Advanced: "YOUR_YEARLY_ID", Premium: "YOUR_YEARLY_ID" }
+                    yearly: { Basic: "P-99C129587B2750623NH6J6IA", Advanced: "P-52M46233MR674514ENH6J75I", Premium: "P-6U140429FU673050NNH6KBBQ" }
                 };
                 return actions.subscription.create({ 'plan_id': planIds[billingCycle][currentTier] });
             },
