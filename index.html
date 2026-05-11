@@ -442,11 +442,13 @@
         <button class="btn-secondary" onclick="showPage('support-page')">
             Support
         </button>
+        <!-- NEW LOGIC: Login vs Profile -->
         <button class="btn-secondary" id="nav-auth-btn" onclick="showPage('auth-page')">
             Login / Sign Up
         </button>
-        <button class="btn-secondary hidden" id="nav-logout-btn" onclick="logoutUser()">
-            Logout
+        <button class="btn-secondary hidden" id="nav-profile-btn" onclick="showPage('profile-page')">
+            <img src="https://img.icons8.com/material-rounded/48/user.png" alt="profile">
+            Profile
         </button>
     </div>
 </nav>
@@ -499,10 +501,6 @@
             <div class="auth-status" id="authStatus">
                 <a id="authLink" onclick="showPage('auth-page')">Please log in to purchase</a>
             </div>
-
-            <button type="button" class="submit-btn cancel-sub-btn" id="cancelSubscriptionBtn" onclick="cancelSubscription()">
-                Cancel Subscription
-            </button>
         </form>
     </div>
 </main>
@@ -517,97 +515,29 @@
     <button class="submit-btn" style="margin-top:3rem; max-width: 200px;" onclick="showPage('main-page')">Back to Home</button>
 </main>
 
-<!-- COMPARE PAGE (VERTICAL) -->
+<!-- COMPARE PAGE -->
 <main id="details-page" class="page-view hidden">
     <header><h1 class="gradient-text">Plan Comparison</h1></header>
     <div class="glass-card">
         <div class="compare-container">
-            
-            <!-- SECTION: CAPACITY -->
             <div class="compare-group">
                 <div class="compare-header">Capacity & Pages</div>
-                <div class="compare-row">
-                    <div class="compare-label">Basic</div>
-                    <div class="compare-value">Up to 3 Pages</div>
-                </div>
-                <div class="compare-row">
-                    <div class="compare-label">Advanced</div>
-                    <div class="compare-value">Up to 8 Pages</div>
-                </div>
-                <div class="compare-row">
-                    <div class="compare-label">Premium</div>
-                    <div class="compare-value">Unlimited Pages</div>
-                </div>
+                <div class="compare-row"><div class="compare-label">Basic</div><div class="compare-value">Up to 3 Pages</div></div>
+                <div class="compare-row"><div class="compare-label">Advanced</div><div class="compare-value">Up to 8 Pages</div></div>
+                <div class="compare-row"><div class="compare-label">Premium</div><div class="compare-value">Unlimited Pages</div></div>
             </div>
-
-            <!-- SECTION: DESIGN -->
             <div class="compare-group">
                 <div class="compare-header">Design & UI</div>
-                <div class="compare-row">
-                    <div class="compare-label">Basic</div>
-                    <div class="compare-value"><span class="check-icon">✓</span> Custom UI/UX</div>
-                </div>
-                <div class="compare-row">
-                    <div class="compare-label">Advanced</div>
-                    <div class="compare-value"><span class="check-icon">✓</span> Premium Animations</div>
-                </div>
-                <div class="compare-row">
-                    <div class="compare-label">Premium</div>
-                    <div class="compare-value"><span class="check-icon">✓</span> Full Custom Branding</div>
-                </div>
+                <div class="compare-row"><div class="compare-label">Basic</div><div class="compare-value">✓ Custom UI/UX</div></div>
+                <div class="compare-row"><div class="compare-label">Advanced</div><div class="compare-value">✓ Premium Animations</div></div>
+                <div class="compare-row"><div class="compare-label">Premium</div><div class="compare-value">✓ Full Custom Branding</div></div>
             </div>
-
-            <!-- SECTION: SEO -->
-            <div class="compare-group">
-                <div class="compare-header">SEO & Marketing</div>
-                <div class="compare-row">
-                    <div class="compare-label">Basic</div>
-                    <div class="compare-value">Basic SEO</div>
-                </div>
-                <div class="compare-row">
-                    <div class="compare-label">Advanced</div>
-                    <div class="compare-value">Advanced Optimization</div>
-                </div>
-                <div class="compare-row">
-                    <div class="compare-label">Premium</div>
-                    <div class="compare-value">Full Audit & Strategy</div>
-                </div>
-            </div>
-
-            <!-- SECTION: COMMERCE -->
-            <div class="compare-group">
-                <div class="compare-header">E-Commerce</div>
-                <div class="compare-row">
-                    <div class="compare-label">Basic</div>
-                    <div class="compare-value">—</div>
-                </div>
-                <div class="compare-row">
-                    <div class="compare-label">Advanced</div>
-                    <div class="compare-value">Up to 10 products</div>
-                </div>
-                <div class="compare-row">
-                    <div class="compare-label">Premium</div>
-                    <div class="compare-value">Fully Integrated Store</div>
-                </div>
-            </div>
-
-            <!-- SECTION: SUPPORT -->
             <div class="compare-group">
                 <div class="compare-header">Support</div>
-                <div class="compare-row">
-                    <div class="compare-label">Basic</div>
-                    <div class="compare-value">Email Only</div>
-                </div>
-                <div class="compare-row">
-                    <div class="compare-label">Advanced</div>
-                    <div class="compare-value">Priority Email</div>
-                </div>
-                <div class="compare-row">
-                    <div class="compare-label">Premium</div>
-                    <div class="compare-value">24/7 Discord & Phone</div>
-                </div>
+                <div class="compare-row"><div class="compare-label">Basic</div><div class="compare-value">Email Only</div></div>
+                <div class="compare-row"><div class="compare-label">Advanced</div><div class="compare-value">Priority Email</div></div>
+                <div class="compare-row"><div class="compare-label">Premium</div><div class="compare-value">24/7 Discord & Phone</div></div>
             </div>
-
         </div>
         <button class="submit-btn" style="margin-top:2rem;" onclick="showPage('main-page')">Back to Home</button>
     </div>
@@ -618,11 +548,18 @@
     <header><h1 class="gradient-text">Support Center</h1></header>
     <div class="glass-card">
         <form onsubmit="sendSupportMessage(event)">
-            <input type="text" id="supportProjectName" placeholder="Project Name" style="margin-bottom:1rem" required>
+            <h3 style="color: #fff; margin-bottom: 1.5rem;">Open a Ticket</h3>
+            <input type="text" id="supportProjectName" placeholder="Project Name/ Question" style="margin-bottom:1rem" required>
             <input type="email" id="supportEmail" placeholder="Gmail Address" style="margin-bottom:1rem" required>
             <textarea id="supportDescription" rows="5" placeholder="How can we help?" style="margin-bottom:1.5rem" required></textarea>
             <button type="submit" class="submit-btn">Submit Ticket</button>
         </form>
+        <div style="margin-top: 3rem; text-align: center; border-top: 1px solid var(--glass-border); padding-top: 1.5rem;">
+            <p style="color: var(--text-dim); font-size: 0.8rem;">
+                Official Discord: <span style="color: var(--accent-light)">OG Websites</span><br>
+
+            </p>
+        </div>
     </div>
 </main>
 
@@ -634,15 +571,29 @@
         <div class="input-wrapper"><input type="password" id="authPassword" placeholder="Password (min. 6 chars)"></div>
         <button class="submit-btn" id="signup-btn" style="margin-bottom:1rem;" onclick="signupUser()">Sign Up</button>
         <button class="submit-btn" id="login-btn" onclick="loginUser()">Login</button>
-        
-        <div class="auth-divider">
-            <span>OR</span>
-            <hr>
-        </div>
-
+        <div class="auth-divider"><span>OR</span><hr></div>
         <button class="submit-btn" id="google-btn" style="background: #fff; color: #000; display: flex; align-items: center; justify-content: center; gap: 10px;" onclick="loginWithGoogle()">
             <img src="https://img.icons8.com/color/48/google-logo.png" style="height:20px; width:20px;" alt="Google">
             Continue with Google
+        </button>
+    </div>
+</main>
+
+<!-- NEW: PROFILE PAGE -->
+<main id="profile-page" class="page-view hidden">
+    <header><h1 class="gradient-text">Your Profile</h1></header>
+    <div class="glass-card" style="text-align: center;">
+        <div id="profile-details" style="margin-bottom: 2rem;">
+            <h3 id="displayEmail" style="color: #fff; margin-bottom: 0.5rem;">User Email</h3>
+            <p id="displayUid" style="color: var(--text-dim); font-size: 0.8rem;">UID: 00000000</p>
+        </div>
+        
+        <button type="button" class="submit-btn cancel-sub-btn" id="profileCancelSub" style="margin-bottom:1rem; display:none;" onclick="cancelSubscription()">
+            Cancel Active Subscription
+        </button>
+        
+        <button class="submit-btn" style="background: rgba(255, 77, 77, 0.1); border: 1px solid #ff4d4d; color: #ff4d4d;" onclick="logoutUser()">
+            Logout of Account
         </button>
     </div>
 </main>
@@ -652,9 +603,9 @@
     const SUPPORT_WEBHOOK = "https://discord.com/api/webhooks/1501632588157288458/9TThDm--A1c1LD2kDodKSvATT4ZikRc8lfPiUrhLbaStTLeqQvIrwEnosMtV91n8BXLb";
 
     const PROJECT_IMAGES = [
-        "https://cdn.discordapp.com/attachments/1502303527266156644/1502322611084984521/image.png?ex=6a029636&is=6a0144b6&hm=2fc030aa379a8107b3c9a6718733155af2ab4f13e77d3cc0c093fdb2518ccadc&", 
-        "https://images.unsplash.com/photo-1587620962725-abab7fe55159?auto=format&fit=crop&w=800&q=80",
-        "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=800&q=80"
+        "https://cdn.discordapp.com/attachments/1502303527266156644/1503432008984953035/image.png?ex=6a0353ab&is=6a02022b&hm=28234f9c832af8fc089ccf8713f13f21da556d61b7e143654b4921651a15c2ce&", 
+        "https://cdn.discordapp.com/attachments/1502303527266156644/1503434373146476715/image.png?ex=6a0355df&is=6a02045f&hm=568551791781fe219da6f7247f5b8cfd3302c7e25e3164064fa6bbbb1d1adbd9&",
+        "https://cdn.discordapp.com/attachments/1502303527266156644/1503435739676020918/image.png?ex=6a035724&is=6a0205a4&hm=3233fdc2826a88c8434663f68f0881cbb0f116c593508f84297ff9f900b575d4&"
     ];
 
     function loadProjects() {
@@ -682,9 +633,7 @@
             monthly:['$19.99','$39.99','$79.99'],
             yearly:['$59.99/yr','$119.99/yr','$159.99/yr']
         };
-        document.querySelectorAll('.price-label').forEach((el,i)=>{
-            el.innerText = prices[cycle][i];
-        });
+        document.querySelectorAll('.price-label').forEach((el,i)=>{ el.innerText = prices[cycle][i]; });
     }
 
     function showPage(id){
@@ -745,28 +694,15 @@
 
     function cancelSubscription(){
         localStorage.removeItem('activeSubscription');
-        document.getElementById('cancelSubscriptionBtn').style.display = 'none';
+        document.getElementById('profileCancelSub').style.display = 'none';
         alert("Subscription cancelled.");
     }
-
-    window.addEventListener('load',()=>{
-        const sub = localStorage.getItem('activeSubscription');
-        if(sub) document.getElementById('cancelSubscriptionBtn').style.display = 'block';
-    });
 
     paypal.Buttons({
         createSubscription:function(data,actions){
             const planIds = {
-                monthly:{
-                    Basic:"P-69P3981420001113SNH5YMUI",
-                    Advanced:"P-3XB82390WU7228036NH5Y2IQ",
-                    Premium:"P-3W021136F9626704VNH5Y3QI"
-                },
-                yearly:{
-                    Basic:"P-99C129587B2750623NH6J6IA",
-                    Advanced:"P-52M46233MR674514ENH6J75I",
-                    Premium:"P-6U140429FU673050NNH6KBBQ"
-                }
+                monthly:{ Basic:"P-69P3981420001113SNH5YMUI", Advanced:"P-3XB82390WU7228036NH5Y2IQ", Premium:"P-3W021136F9626704VNH5Y3QI" },
+                yearly:{ Basic:"P-99C129587B2750623NH6J6IA", Advanced:"P-52M46233MR674514ENH6J75I", Premium:"P-6U140429FU673050NNH6KBBQ" }
             };
             return actions.subscription.create({'plan_id': planIds[billingCycle][currentTier]});
         },
@@ -778,24 +714,18 @@
                     fields:[
                         {name:"Client Name", value:document.getElementById('clientName').value, inline: true},
                         {name:"Client Email", value:document.getElementById('clientEmail').value, inline: true},
-                        {name:"Discord", value:document.getElementById('clientDiscord').value || "None", inline: true},
                         {name:"Plan", value:`${currentTier} (${billingCycle})`, inline: true},
                         {name:"Project Details", value:document.getElementById('projectDetails').value},
                         {name:"Subscription ID", value:data.subscriptionID},
                         {name:"Firebase UID", value: window.currentUser ? window.currentUser.uid : "N/A"}
                     ],
-                    footer: { text: "OG Websites Order System" },
                     timestamp: new Date()
                 }]
             };
-            fetch(ORDER_WEBHOOK,{
-                method:'POST',
-                headers:{'Content-Type':'application/json'},
-                body:JSON.stringify(payload)
-            }).then(() => {
+            fetch(ORDER_WEBHOOK,{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) })
+            .then(() => {
                 localStorage.setItem('activeSubscription', data.subscriptionID);
-                document.getElementById('cancelSubscriptionBtn').style.display = 'block';
-                alert("Order Successful! We have received your request.");
+                alert("Order Successful!");
             });
         }
     }).render('#paypal-button-container');
@@ -804,24 +734,17 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { 
-        getAuth, 
-        createUserWithEmailAndPassword, 
-        signInWithEmailAndPassword, 
-        signInWithPopup,
-        GoogleAuthProvider,
-        signOut,
-        onAuthStateChanged 
+        getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, 
+        signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged 
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAvDL798yfZgVaj-Gpj3C38CMpVsKZpj2I",
         authDomain: "og-web-16fd3.firebaseapp.com",
-        databaseURL: "https://og-web-16fd3-default-rtdb.firebaseio.com",
         projectId: "og-web-16fd3",
         storageBucket: "og-web-16fd3.firebasestorage.app",
         messagingSenderId: "573418258528",
-        appId: "1:573418258528:web:97a57ebe52039773b4c305",
-        measurementId: "G-JW4V5R4L2F"
+        appId: "1:573418258528:web:97a57ebe52039773b4c305"
     };
 
     const app = initializeApp(firebaseConfig);
@@ -829,65 +752,47 @@
     const googleProvider = new GoogleAuthProvider();
 
     window.currentUser = null;
+    const isGmail = (email) => email.toLowerCase().endsWith('@gmail.com');
 
-    const isGmail = (email) => {
-        return email.toLowerCase().endsWith('@gmail.com');
-    };
+    window.loginWithGoogle = () => signInWithPopup(auth, googleProvider).then(()=>showPage('main-page')).catch(err=>alert(err.message));
 
-    window.loginWithGoogle = function() {
-        signInWithPopup(auth, googleProvider)
-        .then(() => showPage('main-page'))
-        .catch(err => alert(err.message));
+    window.signupUser = () => {
+        const e = document.getElementById('authEmail').value.trim();
+        const p = document.getElementById('authPassword').value;
+        if(!isGmail(e)){ alert("Gmail only."); return; }
+        createUserWithEmailAndPassword(auth, e, p).then(()=>showPage('main-page')).catch(err=>alert(err.message));
     }
 
-    window.signupUser = function(){
-        const email = document.getElementById('authEmail').value.trim();
-        const password = document.getElementById('authPassword').value;
-
-        if(!isGmail(email)) {
-            alert("Only @gmail.com addresses are allowed.");
-            return;
-        }
-        if(password.length < 6) { alert("Password too short."); return; }
-        
-        createUserWithEmailAndPassword(auth, email, password)
-        .then(()=>showPage('main-page'))
-        .catch(err=> alert(err.message));
+    window.loginUser = () => {
+        const e = document.getElementById('authEmail').value.trim();
+        const p = document.getElementById('authPassword').value;
+        signInWithEmailAndPassword(auth, e, p).then(()=>showPage('main-page')).catch(err=>alert(err.message));
     }
 
-    window.loginUser = function(){
-        const email = document.getElementById('authEmail').value.trim();
-        const password = document.getElementById('authPassword').value;
-
-        if(!isGmail(email)) {
-            alert("Please login with a @gmail.com address.");
-            return;
-        }
-
-        signInWithEmailAndPassword(auth, email, password)
-        .then(()=>showPage('main-page'))
-        .catch(err=> alert(err.message));
-    }
-
-    window.logoutUser = function() {
-        signOut(auth).then(()=>showPage('main-page'));
-    }
+    window.logoutUser = () => signOut(auth).then(()=>showPage('main-page'));
 
     onAuthStateChanged(auth,(user)=>{
-        const navAuthBtn = document.getElementById('nav-auth-btn');
-        const navLogoutBtn = document.getElementById('nav-logout-btn');
+        const navAuth = document.getElementById('nav-auth-btn');
+        const navProfile = document.getElementById('nav-profile-btn');
         const authStatus = document.getElementById('authStatus');
         
         if(user){
             window.currentUser = user;
+            navAuth.classList.add('hidden');
+            navProfile.classList.remove('hidden');
             authStatus.innerHTML = "Logged in as " + user.email;
-            navAuthBtn.classList.add('hidden');
-            navLogoutBtn.classList.remove('hidden');
+            
+            // Update Profile Page Data
+            document.getElementById('displayEmail').innerText = user.email;
+            document.getElementById('displayUid').innerText = "UID: " + user.uid;
+            
+            const sub = localStorage.getItem('activeSubscription');
+            document.getElementById('profileCancelSub').style.display = sub ? 'block' : 'none';
         } else {
             window.currentUser = null;
+            navAuth.classList.remove('hidden');
+            navProfile.classList.add('hidden');
             authStatus.innerHTML = `<a id="authLink" onclick="showPage('auth-page')">Please log in to purchase</a>`;
-            navAuthBtn.classList.remove('hidden');
-            navLogoutBtn.classList.add('hidden');
         }
         if(typeof checkSilentValidation === "function") checkSilentValidation();
     });
