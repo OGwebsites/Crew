@@ -5,10 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OG Websites | Premium Development</title>
 
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=300;400;600;800&display=swap" rel="stylesheet">
 
-    <!-- PAYPAL SDK -->
     <script src="https://www.paypal.com/sdk/js?client-id=AbvoNQiduLHQzN2OpamkoIUbGPPMLCjiiIWabtl3UZ-wMY4IuWnNcT1KtPG65JbNfMLDXFwoIMleQGfR&vault=true&intent=subscription"></script>
+
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script type="text/javascript">
+        (function() {
+            // Initialize EmailJS with your Public Key
+            emailjs.init("NFfpza5ndHKX5cbbw"); 
+        })();
+    </script>
 
     <style>
         :root{
@@ -442,7 +449,6 @@
         <button class="btn-secondary" onclick="showPage('support-page')">
             Support
         </button>
-        <!-- NEW LOGIC: Login vs Profile -->
         <button class="btn-secondary" id="nav-auth-btn" onclick="showPage('auth-page')">
             Login / Sign Up
         </button>
@@ -453,7 +459,6 @@
     </div>
 </nav>
 
-<!-- MAIN PAGE -->
 <main id="main-page" class="page-view">
     <header>
         <h1 class="gradient-text">Scale Your Brand</h1>
@@ -505,7 +510,6 @@
     </div>
 </main>
 
-<!-- PROJECTS PAGE -->
 <main id="projects-page" class="page-view hidden">
     <header>
         <h1 class="gradient-text">Our Projects</h1>
@@ -515,7 +519,6 @@
     <button class="submit-btn" style="margin-top:3rem; max-width: 200px;" onclick="showPage('main-page')">Back to Home</button>
 </main>
 
-<!-- COMPARE PAGE -->
 <main id="details-page" class="page-view hidden">
     <header><h1 class="gradient-text">Plan Comparison</h1></header>
     <div class="glass-card">
@@ -543,7 +546,6 @@
     </div>
 </main>
 
-<!-- SUPPORT PAGE -->
 <main id="support-page" class="page-view hidden">
     <header><h1 class="gradient-text">Support Center</h1></header>
     <div class="glass-card">
@@ -557,29 +559,40 @@
         <div style="margin-top: 3rem; text-align: center; border-top: 1px solid var(--glass-border); padding-top: 1.5rem;">
             <p style="color: var(--text-dim); font-size: 0.8rem;">
                 Official Discord: <span style="color: var(--accent-light)">OG Websites</span><br>
-
             </p>
         </div>
     </div>
 </main>
 
-<!-- AUTH PAGE -->
 <main id="auth-page" class="page-view hidden">
     <header><h1 class="gradient-text">Account Access</h1></header>
     <div class="glass-card">
-        <div class="input-wrapper"><input type="email" id="authEmail" placeholder="Gmail Address (@gmail.com only)"></div>
-        <div class="input-wrapper"><input type="password" id="authPassword" placeholder="Password (min. 6 chars)"></div>
-        <button class="submit-btn" id="signup-btn" style="margin-bottom:1rem;" onclick="signupUser()">Sign Up</button>
-        <button class="submit-btn" id="login-btn" onclick="loginUser()">Login</button>
-        <div class="auth-divider"><span>OR</span><hr></div>
-        <button class="submit-btn" id="google-btn" style="background: #fff; color: #000; display: flex; align-items: center; justify-content: center; gap: 10px;" onclick="loginWithGoogle()">
-            <img src="https://img.icons8.com/color/48/google-logo.png" style="height:20px; width:20px;" alt="Google">
-            Continue with Google
-        </button>
+        <div id="auth-inputs-container">
+            <div class="input-wrapper"><input type="email" id="authEmail" placeholder="Gmail Address (@gmail.com only)"></div>
+            <div class="input-wrapper"><input type="password" id="authPassword" placeholder="Password (min. 6 chars)"></div>
+            <button class="submit-btn" id="signup-btn" style="margin-bottom:1rem;" onclick="signupUser()">Sign Up</button>
+            <button class="submit-btn" id="login-btn" onclick="loginUser()">Login</button>
+            <div class="auth-divider"><span>OR</span><hr></div>
+            <button class="submit-btn" id="google-btn" style="background: #fff; color: #000; display: flex; align-items: center; justify-content: center; gap: 10px;" onclick="loginWithGoogle()">
+                <img src="https://img.icons8.com/color/48/google-logo.png" style="height:20px; width:20px;" alt="Google">
+                Continue with Google
+            </button>
+        </div>
+
+        <div id="verification-container" class="hidden" style="margin-top: 1rem;">
+            <div class="auth-divider"><span>VERIFICATION REQUIRED</span><hr></div>
+            <p style="color: var(--text-dim); text-align: center; margin-bottom: 1rem; font-size: 0.9rem;">
+                Enter the one-time 6-digit security code sent to your email.
+            </p>
+            <div class="input-wrapper">
+                <input type="text" id="verificationCodeInput" placeholder="Enter 6-Digit Code" maxlength="6" style="text-align: center; font-size: 1.5rem; letter-spacing: 5px;">
+            </div>
+            <button class="submit-btn" id="verify-code-btn" style="background: #00ff88; color: #000; margin-bottom:1rem;">Verify & Proceed</button>
+            <button class="submit-btn" style="background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--glass-border);" onclick="cancelVerificationFlow()">Cancel</button>
+        </div>
     </div>
 </main>
 
-<!-- NEW: PROFILE PAGE -->
 <main id="profile-page" class="page-view hidden">
     <header><h1 class="gradient-text">Your Profile</h1></header>
     <div class="glass-card" style="text-align: center;">
@@ -735,7 +748,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { 
         getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, 
-        signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged 
+        signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
     const firebaseConfig = {
@@ -754,20 +767,124 @@
     window.currentUser = null;
     const isGmail = (email) => email.toLowerCase().endsWith('@gmail.com');
 
-    window.loginWithGoogle = () => signInWithPopup(auth, googleProvider).then(()=>showPage('main-page')).catch(err=>alert(err.message));
+    let generatedCode = null;
+    let pendingAction = null; 
 
+    const EMAILJS_SERVICE_ID = "service_h4rczgj";
+    const EMAILJS_TEMPLATE_ID = "template_w4hglmj";
+
+    window.showVerificationUI = (code, actionCallback) => {
+        generatedCode = code;
+        pendingAction = actionCallback;
+        document.getElementById('auth-inputs-container').classList.add('hidden');
+        document.getElementById('verification-container').classList.remove('hidden');
+        document.getElementById('verificationCodeInput').value = "";
+    };
+
+    window.cancelVerificationFlow = () => {
+        // If they click cancel on verification, delete the temporary user account to clear the slot
+        if(auth.currentUser) {
+            auth.currentUser.delete().catch(() => {});
+        }
+        generatedCode = null;
+        pendingAction = null;
+        document.getElementById('verification-container').classList.add('hidden');
+        document.getElementById('auth-inputs-container').classList.remove('hidden');
+    };
+
+    document.getElementById('verify-code-btn').onclick = () => {
+        const userInput = document.getElementById('verificationCodeInput').value.trim();
+        if (userInput === String(generatedCode)) {
+            if (typeof pendingAction === "function") {
+                pendingAction();
+            }
+        } else {
+            alert("Invalid security code. Please check your email and try again.");
+        }
+    };
+
+    const sendOtpEmail = (emailTarget, callback) => {
+        const code = Math.floor(100000 + Math.random() * 900000);
+        
+        const templateParams = {
+            to_email: emailTarget, 
+            email: emailTarget,     
+            code: code
+        };
+
+        emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams)
+            .then(() => {
+                window.showVerificationUI(code, callback);
+            })
+            .catch((err) => {
+                alert("Failed to send verification code email: " + err.text);
+                // Clean up user if code fails to send completely
+                if(auth.currentUser) auth.currentUser.delete().catch(() => {});
+            });
+    };
+
+    window.loginWithGoogle = () => {
+        signInWithPopup(auth, googleProvider)
+            .then((result) => {
+                const targetEmail = result.user.email; 
+                if (!targetEmail) {
+                    alert("Could not retrieve email address from Google Account profile.");
+                    return;
+                }
+                signOut(auth).then(() => {
+                    sendOtpEmail(targetEmail, () => {
+                        signInWithPopup(auth, googleProvider)
+                            .then(() => showPage('main-page'))
+                            .catch(err => alert(err.message));
+                    });
+                });
+            })
+            .catch(err => alert(err.message));
+    };
+
+    // FIXED: Checks database existence instantly before running EmailJS using built-in hooks
     window.signupUser = () => {
         const e = document.getElementById('authEmail').value.trim();
         const p = document.getElementById('authPassword').value;
         if(!isGmail(e)){ alert("Gmail only."); return; }
-        createUserWithEmailAndPassword(auth, e, p).then(()=>showPage('main-page')).catch(err=>alert(err.message));
-    }
+        if(p.length < 6){ alert("Password must be at least 6 characters."); return; }
+
+        // Attempt account registration directly.
+        createUserWithEmailAndPassword(auth, e, p)
+            .then(() => {
+                // Account created successfully! It is a fresh user. Now we send the verification email.
+                sendOtpEmail(e, () => {
+                    // Verification success callback: Send user directly to home page
+                    showPage('main-page');
+                });
+            })
+            .catch((error) => {
+                // If it is already registered in the DB, Firebase blocks execution here natively!
+                if (error.code === 'auth/email-already-in-use') {
+                    alert("This Gmail is already in use. Please log in instead.");
+                } else {
+                    alert(error.message);
+                }
+            });
+    };
 
     window.loginUser = () => {
         const e = document.getElementById('authEmail').value.trim();
         const p = document.getElementById('authPassword').value;
-        signInWithEmailAndPassword(auth, e, p).then(()=>showPage('main-page')).catch(err=>alert(err.message));
-    }
+        if(!isGmail(e)){ alert("Gmail only."); return; }
+
+        signInWithEmailAndPassword(auth, e, p)
+            .then(() => {
+                signOut(auth).then(() => {
+                    sendOtpEmail(e, () => {
+                        signInWithEmailAndPassword(auth, e, p)
+                            .then(() => showPage('main-page'))
+                            .catch(err => alert(err.message));
+                    });
+                });
+            })
+            .catch(err => alert(err.message));
+    };
 
     window.logoutUser = () => signOut(auth).then(()=>showPage('main-page'));
 
@@ -782,7 +899,6 @@
             navProfile.classList.remove('hidden');
             authStatus.innerHTML = "Logged in as " + user.email;
             
-            // Update Profile Page Data
             document.getElementById('displayEmail').innerText = user.email;
             document.getElementById('displayUid').innerText = "UID: " + user.uid;
             
