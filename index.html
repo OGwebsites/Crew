@@ -604,7 +604,7 @@
         </div>
 
         <div id="verification-container" class="hidden" style="margin-top: 1rem;">
-            <div id="otp-input-section" class="hidden">
+            <div id="otp-input-section">
                 <div class="auth-divider"><span>VERIFICATION REQUIRED</span><hr></div>
                 <p style="color: var(--text-dim); text-align: center; margin-bottom: 1rem; font-size: 0.9rem;">
                     Enter the one-time 6-digit security code sent to your email.
@@ -627,25 +627,36 @@
                 </div>
                 <button class="submit-btn" id="save-google-password-btn" style="background: #00d2ff; color: #000;">Save Password & Finish</button>
             </div>
+        </div>
 
-            <div id="google-password-reauth-container" class="hidden">
-                <div class="auth-divider"><span>ACCOUNT SECURITY</span><hr></div>
-                <p style="color: var(--text-dim); text-align: center; margin-bottom: 1rem; font-size: 0.9rem;">
-                    This email is already associated with a password layout. To verify ownership, confirm your original password or set a new updated one.
-                </p>
+        <div id="google-conflict-container" class="hidden" style="margin-top: 1rem;">
+            <div class="auth-divider"><span>SECURITY ACTION REQUIRED</span><hr></div>
+            <p style="color: var(--text-dim); text-align: center; margin-bottom: 1.5rem; font-size: 0.9rem;">
+                An account with this email already has a configured password. Please re-enter your current original password or update it to a new one.
+            </p>
+            
+            <div id="conflict-choice-buttons">
+                <button class="submit-btn" style="margin-bottom: 1rem; background: var(--accent-light); color: #000;" onclick="switchConflictView('verify')">Verify Original Password</button>
+                <button class="submit-btn" style="background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: #fff; margin-bottom: 1rem;" onclick="switchConflictView('update')">Update to New Password</button>
+                <button class="submit-btn" style="background: #ff4d4d; color: #fff;" onclick="cancelConflictFlow()">Cancel</button>
+            </div>
+
+            <div id="conflict-verify-section" class="hidden">
                 <div class="input-wrapper auth-input-container-with-toggle">
-                    <input type="password" id="googleOldPasswordInput" placeholder="Enter Original Password">
-                    <button type="button" class="password-toggle" id="toggleOldPassBtn" onclick="togglePasswordVisibility('googleOldPasswordInput', 'toggleOldPassBtn')">SHOW</button>
+                    <input type="password" id="conflictOldPassword" placeholder="Original Password">
+                    <button type="button" class="password-toggle" id="toggleConflictOldBtn" onclick="togglePasswordVisibility('conflictOldPassword', 'toggleConflictOldBtn')">SHOW</button>
                 </div>
-                <button class="submit-btn" id="confirm-old-pass-btn" style="background: #00ff88; color: #000; margin-bottom: 1rem;">Confirm Original Password</button>
-                
-                <div class="auth-divider"><span>OR UPDATE PASSWORD</span><hr></div>
-                <div class="input-wrapper auth-input-container-with-toggle">
-                    <input type="password" id="googleUpdatedPasswordInput" placeholder="Enter New Updated Password">
-                    <button type="button" class="password-toggle" id="toggleUpdatedPassBtn" onclick="togglePasswordVisibility('googleUpdatedPasswordInput', 'toggleUpdatedPassBtn')">SHOW</button>
+                <button class="submit-btn" id="conflict-verify-submit-btn" style="background: #00ff88; color:#000; margin-bottom: 1rem;">Confirm & Link Account</button>
+                <button class="submit-btn" style="background: transparent; color: var(--text-dim);" onclick="switchConflictView('menu')">Back</button>
+            </div>
+
+            <div id="conflict-update-section" class="hidden">
+                <div class="input-wrapper auth-input-container-with-toggle" style="margin-bottom: 1rem;">
+                    <input type="password" id="conflictUpdateNewPassword" placeholder="New Password (min. 6 chars)">
+                    <button type="button" class="password-toggle" id="toggleConflictNewBtn" onclick="togglePasswordVisibility('conflictUpdateNewPassword', 'toggleConflictNewBtn')">SHOW</button>
                 </div>
-                <button class="submit-btn" id="update-new-pass-btn" style="background: #00d2ff; color: #000; margin-bottom: 1rem;">Update to New Password</button>
-                <button class="submit-btn" style="background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--glass-border);" onclick="cancelVerificationFlow()">Cancel</button>
+                <button class="submit-btn" id="conflict-update-submit-btn" style="background: #00d2ff; color:#000; margin-bottom: 1rem;">Update Password & Link</button>
+                <button class="submit-btn" style="background: transparent; color: var(--text-dim);" onclick="switchConflictView('menu')">Back</button>
             </div>
         </div>
     </div>
@@ -819,8 +830,8 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { 
         getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, 
-        signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, updatePassword,
-        fetchSignInMethodsForEmail, linkWithCredential, EmailAuthProvider
+        signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, 
+        updatePassword, fetchSignInMethodsForEmail, linkWithCredential, EmailAuthProvider
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
     const firebaseConfig = {
@@ -843,7 +854,9 @@
     let pendingAction = null; 
     let isGoogleFlow = false; 
 
-    // Dynamic state listener
+    const EMAILJS_SERVICE_ID = "service_h4rczgj";
+    const EMAILJS_TEMPLATE_ID = "template_5mf0dpa";
+
     onAuthStateChanged(auth, (user) => {
         if (user) {
             window.currentUser = user;
@@ -878,142 +891,59 @@
         document.getElementById('verification-container').classList.remove('hidden');
         document.getElementById('otp-input-section').classList.remove('hidden');
         document.getElementById('set-password-container').classList.add('hidden');
-        document.getElementById('google-password-reauth-container').classList.add('hidden');
         document.getElementById('verificationCodeInput').value = "";
     };
 
     window.cancelVerificationFlow = () => {
-        document.getElementById('auth-inputs-container').classList.remove('hidden');
-        document.getElementById('verification-container').classList.add('hidden');
         generatedCode = null;
         pendingAction = null;
-    };
-
-    // --- CONTINUE WITH GOOGLE INTERACTION HANDLER ---
-    window.loginWithGoogle = async () => {
-        try {
-            // Trigger popup to get the target Google user credentials first
-            const result = await signInWithPopup(auth, googleProvider);
-            const user = result.user;
-            const credential = GoogleAuthProvider.credentialFromResult(result);
-
-            // Fetch password systems associated with this specific login address
-            const methods = await fetchSignInMethodsForEmail(auth, user.email);
-            
-            if (methods.includes('password')) {
-                // User has an existing standard password setup. Call security layout checks.
-                // Log them out temporarily so they cannot stay on the dashboard without verification.
-                window.temporaryGoogleUser = user;
-                window.temporaryGoogleCredential = credential;
-                await signOut(auth);
-
-                document.getElementById('auth-inputs-container').classList.add('hidden');
-                document.getElementById('verification-container').classList.remove('hidden');
-                document.getElementById('otp-input-section').classList.add('hidden');
-                document.getElementById('set-password-container').classList.add('hidden');
-                document.getElementById('google-password-reauth-container').classList.remove('hidden');
-            } else {
-                // Seamless directly managed OAuth account
-                showPage('main-page');
-            }
-        } catch (error) {
-            if (error.code === 'auth/account-exists-with-different-credential') {
-                // Fallback catch if the user's provider account linkage configuration demands explicit merging
-                const pendingCred = error.credential;
-                const email = error.customData.email;
-                const methods = await fetchSignInMethodsForEmail(auth, email);
-
-                if (methods.includes('password')) {
-                    window.temporaryGoogleCredential = pendingCred;
-                    window.temporaryGoogleEmail = email;
-
-                    document.getElementById('auth-inputs-container').classList.add('hidden');
-                    document.getElementById('verification-container').classList.remove('hidden');
-                    document.getElementById('otp-input-section').classList.add('hidden');
-                    document.getElementById('set-password-container').classList.add('hidden');
-                    document.getElementById('google-password-reauth-container').classList.remove('hidden');
-                }
-            } else {
-                alert(error.message);
-            }
-        }
-    };
-
-    // Confirm Old Password Path
-    document.getElementById('confirm-old-pass-btn').onclick = async () => {
-        const passwordInput = document.getElementById('googleOldPasswordInput').value;
-        const email = window.temporaryGoogleUser ? window.temporaryGoogleUser.email : window.temporaryGoogleEmail;
-
-        if (!passwordInput) {
-            alert("Please enter your original password.");
-            return;
-        }
-
-        try {
-            // Re-authenticate user with original email/pass credential combination
-            const userCredential = await signInWithEmailAndPassword(auth, email, passwordInput);
-            
-            // Securely link the incoming Google account configuration token 
-            if (window.temporaryGoogleCredential) {
-                await linkWithCredential(userCredential.user, window.temporaryGoogleCredential);
-            }
-            
-            alert("Account verified and linked successfully!");
-            cleanupGoogleFlow();
-            showPage('main-page');
-        } catch (err) {
-            alert("Incorrect password: " + err.message);
-        }
-    };
-
-    // Update to New Password Path
-    document.getElementById('update-new-pass-btn').onclick = async () => {
-        const newPasswordInput = document.getElementById('googleUpdatedPasswordInput').value;
-        const oldPasswordInput = document.getElementById('googleOldPasswordInput').value;
-        const email = window.temporaryGoogleUser ? window.temporaryGoogleUser.email : window.temporaryGoogleEmail;
-
-        if (!oldPasswordInput || newPasswordInput.length < 6) {
-            alert("Please confirm your original password and set a new password of at least 6 characters.");
-            return;
-        }
-
-        try {
-            // Authenticate using the original profile system structure
-            const userCredential = await signInWithEmailAndPassword(auth, email, oldPasswordInput);
-            
-            // Execute runtime updates over password profile matrices
-            await updatePassword(userCredential.user, newPasswordInput);
-            
-            // Link Google Auth Token cleanly
-            if (window.temporaryGoogleCredential) {
-                await linkWithCredential(userCredential.user, window.temporaryGoogleCredential);
-            }
-
-            alert("Password updated and account successfully verified!");
-            cleanupGoogleFlow();
-            showPage('main-page');
-        } catch (err) {
-            alert("Failed to update: " + err.message);
-        }
-    };
-
-    function cleanupGoogleFlow() {
-        window.temporaryGoogleUser = null;
-        window.temporaryGoogleCredential = null;
-        window.temporaryGoogleEmail = null;
-        document.getElementById('googleOldPasswordInput').value = "";
-        document.getElementById('googleUpdatedPasswordInput').value = "";
-        document.getElementById('google-password-reauth-container').classList.add('hidden');
         document.getElementById('verification-container').classList.add('hidden');
+        document.getElementById('auth-inputs-container').classList.remove('hidden');
+    };
+
+    // Helper functions for UI coordination within the Google Conflict state
+    window.switchConflictView = (view) => {
+        document.getElementById('conflict-choice-buttons').classList.add('hidden');
+        document.getElementById('conflict-verify-section').classList.add('hidden');
+        document.getElementById('conflict-update-section').classList.add('hidden');
+
+        if(view === 'menu') {
+            document.getElementById('conflict-choice-buttons').classList.remove('hidden');
+        } else if(view === 'verify') {
+            document.getElementById('conflict-verify-section').classList.remove('hidden');
+        } else if(view === 'update') {
+            document.getElementById('conflict-update-section').classList.remove('hidden');
+        }
+    };
+
+    window.cancelConflictFlow = () => {
+        document.getElementById('google-conflict-container').classList.add('hidden');
+        document.getElementById('auth-inputs-container').classList.remove('hidden');
+    };
+
+    function generateOTP() {
+        return Math.floor(100000 + Math.random() * 900000).toString();
     }
 
-    // Traditional Native Authentication Routing logic
+    function sendOTPEmail(email, code, onSuccess) {
+        emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+            to_email: email,
+            security_code: code
+        })
+        .then(() => {
+            onSuccess();
+        })
+        .catch((err) => {
+            alert("Error sending verification code: " + JSON.stringify(err));
+        });
+    }
+
     window.signupUser = () => {
         const email = document.getElementById('authEmail').value.trim();
         const password = document.getElementById('authPassword').value;
 
         if (!isGmail(email)) {
-            alert("Only @gmail.com addresses are permitted.");
+            alert("Only valid @gmail.com addresses are allowed.");
             return;
         }
         if (password.length < 6) {
@@ -1021,47 +951,141 @@
             return;
         }
 
-        const code = Math.floor(100000 + Math.random() * 900000).toString();
-        
-        emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-            to_email: email,
-            verification_code: code
-        }).then(() => {
-            window.showVerificationUI(code, () => {
+        const otp = generateOTP();
+        sendOTPEmail(email, otp, () => {
+            window.showVerificationUI(otp, () => {
                 createUserWithEmailAndPassword(auth, email, password)
                     .then(() => {
-                        alert("Sign up successful!");
+                        alert("Account successfully created!");
                         showPage('main-page');
-                    }).catch(e => alert(e.message));
+                    })
+                    .catch(err => alert(err.message));
             });
-        }).catch(err => alert("Failed to dispatch code: " + JSON.stringify(err)));
+        });
     };
 
     window.loginUser = () => {
         const email = document.getElementById('authEmail').value.trim();
         const password = document.getElementById('authPassword').value;
 
-        if (!isGmail(email) || !password) {
-            alert("Please fill working validation layouts properly.");
+        if (!isGmail(email)) {
+            alert("Only valid @gmail.com addresses are allowed.");
+            return;
+        }
+        if (!password) {
+            alert("Please enter your account password.");
             return;
         }
 
-        signInWithEmailAndPassword(auth, email, password)
-            .then(() => {
-                alert("Logged in successfully!");
-                showPage('main-page');
-            }).catch(e => alert(e.message));
+        const otp = generateOTP();
+        sendOTPEmail(email, otp, () => {
+            window.showVerificationUI(otp, () => {
+                signInWithEmailAndPassword(auth, email, password)
+                    .then(() => {
+                        alert("Successfully logged in!");
+                        showPage('main-page');
+                    })
+                    .catch(err => alert(err.message));
+            });
+        });
     };
 
-    document.getElementById('verify-code-btn').onclick = () => {
-        const input = document.getElementById('verificationCodeInput').value.trim();
-        if (input === generatedCode && pendingAction) {
-            pendingAction();
-            cancelVerificationFlow();
+    document.getElementById('verify-code-btn').addEventListener('click', () => {
+        const enteredCode = document.getElementById('verificationCodeInput').value.trim();
+        if (enteredCode === generatedCode) {
+            if (pendingAction) {
+                pendingAction();
+            }
         } else {
-            alert("Invalid security confirmation code.");
+            alert("Invalid verification code. Please check your email and try again.");
         }
+    });
+
+    // CONTINUE WITH GOOGLE INTERCEPT FLOW
+    window.loginWithGoogle = () => {
+        signInWithPopup(auth, googleProvider)
+            .then((result) => {
+                const user = result.user;
+                const email = user.email;
+
+                // Temporarily sign out while verifying account configuration states 
+                signOut(auth).then(() => {
+                    fetchSignInMethodsForEmail(auth, email)
+                        .then((methods) => {
+                            // Check if account already exists with a traditional password config setup
+                            if (methods.includes('password')) {
+                                document.getElementById('auth-inputs-container').classList.add('hidden');
+                                document.getElementById('google-conflict-container').classList.remove('hidden');
+                                window.switchConflictView('menu');
+
+                                // Option 1: Verification of original password
+                                document.getElementById('conflict-verify-submit-btn').onclick = () => {
+                                    const oldPassword = document.getElementById('conflictOldPassword').value;
+                                    if(!oldPassword) { alert("Please input your original password."); return; }
+
+                                    signInWithEmailAndPassword(auth, email, oldPassword)
+                                        .then((existingUserCreds) => {
+                                            // Re-authenticate Google and cleanly link credential structures together
+                                            signInWithPopup(auth, googleProvider).then((googleUserCreds) => {
+                                                alert("Original password confirmed. Successfully logged in!");
+                                                showPage('main-page');
+                                            });
+                                        })
+                                        .catch(err => alert("Incorrect password context. Verify or choose to update: " + err.message));
+                                };
+
+                                // Option 2: Updating password seamlessly to a new target strings
+                                document.getElementById('conflict-update-submit-btn').onclick = () => {
+                                    const newPassword = document.getElementById('conflictUpdateNewPassword').value;
+                                    if(newPassword.length < 6) { alert("New password strings require at least 6 characters."); return; }
+
+                                    // Authorize Google credentials baseline instance, upgrade context safely
+                                    signInWithPopup(auth, googleProvider).then((googleUserCreds) => {
+                                        updatePassword(googleUserCreds.user, newPassword)
+                                            .then(() => {
+                                                alert("Password updated and successfully authenticated!");
+                                                showPage('main-page');
+                                            })
+                                            .catch(err => alert("Failed to reset password constraints: " + err.message));
+                                    });
+                                };
+
+                            } else {
+                                // If account doesn't have a password yet (First time standard OAuth signup)
+                                signInWithPopup(auth, googleProvider).then(() => {
+                                    document.getElementById('auth-inputs-container').classList.add('hidden');
+                                    document.getElementById('verification-container').classList.remove('hidden');
+                                    document.getElementById('otp-input-section').classList.add('hidden');
+                                    document.getElementById('set-password-container').classList.remove('hidden');
+                                });
+                            }
+                        });
+                });
+            })
+            .catch((err) => alert(err.message));
     };
+
+    document.getElementById('save-google-password-btn').addEventListener('click', () => {
+        const password = document.getElementById('newGooglePassword').value;
+        if (password.length < 6) {
+            alert("Password must contain at least 6 characters.");
+            return;
+        }
+
+        if (auth.currentUser) {
+            updatePassword(auth.currentUser, password)
+                .then(() => {
+                    alert("Password set successfully! Welcome to your profile.");
+                    document.getElementById('verification-container').classList.add('hidden');
+                    showPage('main-page');
+                })
+                .catch((err) => alert("Failed setting secure account parameters: " + err.message));
+        } else {
+            alert("No active session identified. Please retry authorization routines.");
+            cancelVerificationFlow();
+        }
+    });
 </script>
+
 </body>
 </html>
