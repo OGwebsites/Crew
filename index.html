@@ -827,275 +827,229 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { 
-        getAuth, 
-        signInWithEmailAndPassword, 
-        createUserWithEmailAndPassword, 
-        signOut, 
-        onAuthStateChanged,
-        GoogleAuthProvider,
-        signInWithPopup
+        getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, 
+        signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, updatePassword
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { 
-        getDatabase, 
-        ref, 
-        set, 
-        get, 
-        update 
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
     const firebaseConfig = {
-        apiKey: "AIzaSyAs760pX_6pYm6nE7mXpX7mXpX7mXpX7mX",
-        authDomain: "og-websites.firebaseapp.com",
-        databaseURL: "https://og-websites-default-rtdb.firebaseio.com",
-        projectId: "og-websites",
-        storageBucket: "og-websites.appspot.com",
-        messagingSenderId: "1050163258005",
-        appId: "1:1050163258005:web:a1b2c3d4e5f6g7h8i9j0k"
+        apiKey: "AIzaSyAvDL798yfZgVaj-Gpj3C38CMpVsKZpj2I",
+        authDomain: "og-web-16fd3.firebaseapp.com",
+        projectId: "og-web-16fd3",
+        storageBucket: "og-web-16fd3.firebasestorage.app",
+        messagingSenderId: "573418258528",
+        appId: "1:573418258528:web:97a57ebe52039773b4c305"
     };
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
-    const database = getDatabase(app);
+    const googleProvider = new GoogleAuthProvider();
 
     window.currentUser = null;
-    let generatedCode = null;
-    let tempAuthData = null; 
-    let isGoogleFlow = false;
+    const isGmail = (email) => email.toLowerCase().endsWith('@gmail.com');
 
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            window.currentUser = user;
-            document.getElementById('nav-auth-btn').classList.add('hidden');
-            document.getElementById('nav-profile-btn').classList.remove('hidden');
-            document.getElementById('displayEmail').innerText = user.email;
-            document.getElementById('displayUid').innerText = "UID: " + user.uid;
-            
-            const activeSub = localStorage.getItem('activeSubscription');
-            if(activeSub){
-                document.getElementById('profileCancelSub').style.display = 'block';
+    let generatedCode = null;
+    let pendingAction = null; 
+    let googleUserRef = null; // Stash user info safely during configuration selection
+
+    const EMAILJS_SERVICE_ID = "service_h4rczgj";
+    const EMAILJS_TEMPLATE_ID = "template_5mf0dpa";
+
+    window.logoutUser = () => {
+        signOut(auth)
+            .then(() => {
+                window.location.reload(); 
+            })
+            .catch((err) => alert(err.message));
+    };
+
+    window.showVerificationUI = (code, actionCallback) => {
+        generatedCode = code;
+        pendingAction = actionCallback;
+        document.getElementById('auth-inputs-container').classList.add('hidden');
+        document.getElementById('verification-container').classList.remove('hidden');
+        document.getElementById('verificationCodeInput').value = "";
+    };
+
+    window.cancelVerificationFlow = () => {
+        if(auth.currentUser) {
+            auth.currentUser.delete().catch(() => {});
+        }
+        generatedCode = null;
+        pendingAction = null;
+        document.getElementById('verification-container').classList.add('hidden');
+        document.getElementById('auth-inputs-container').classList.remove('hidden');
+    };
+
+    document.getElementById('verify-code-btn').onclick = () => {
+        const userInput = document.getElementById('verificationCodeInput').value.trim();
+        if (userInput === String(generatedCode)) {
+            if (typeof pendingAction === "function") {
+                pendingAction();
             }
         } else {
-            window.currentUser = null;
-            document.getElementById('nav-auth-btn').classList.remove('hidden');
-            document.getElementById('nav-profile-btn').classList.add('hidden');
+            alert("Invalid security code.");
         }
-        if(typeof checkSilentValidation === 'function') checkSilentValidation();
-    });
-
-    window.signupUser = function() {
-        const email = document.getElementById('authEmail').value.trim();
-        const password = document.getElementById('authPassword').value;
-
-        if (!email.endsWith('@gmail.com')) {
-            alert("Please use a valid @gmail.com address.");
-            return;
-        }
-        if (password.length < 6) {
-            alert("Password must be at least 6 characters.");
-            return;
-        }
-
-        const sanitizedEmail = email.replace(/\./g, ',');
-        const userRef = ref(database, 'users/' + sanitizedEmail);
-        
-        get(userRef).then((snapshot) => {
-            if (snapshot.exists()) {
-                alert("This account already exists. Please log in instead.");
-            } else {
-                isGoogleFlow = false;
-                generatedCode = Math.floor(100000 + Math.random() * 900000).toString();
-                tempAuthData = { email, password };
-
-                sendVerificationEmail(email, generatedCode, () => {
-                    document.getElementById('auth-inputs-container').classList.add('hidden');
-                    document.getElementById('verification-container').classList.remove('hidden');
-                });
-            }
-        }).catch((error) => {
-            alert("Database check failed: " + error.message);
-        });
     };
 
-    window.loginUser = function() {
-        const email = document.getElementById('authEmail').value.trim();
-        const password = document.getElementById('authPassword').value;
-
-        if (!email.endsWith('@gmail.com')) {
-            alert("Please use a valid @gmail.com address.");
-            return;
-        }
-
-        isGoogleFlow = false;
-        generatedCode = Math.floor(100000 + Math.random() * 900000).toString();
-        tempAuthData = { email, password };
-
-        sendVerificationEmail(email, generatedCode, () => {
-            document.getElementById('auth-inputs-container').classList.add('hidden');
-            document.getElementById('verification-container').classList.remove('hidden');
-        });
+    const sendOtpEmail = (emailTarget, callback) => {
+        const code = Math.floor(100000 + Math.random() * 900000);
+        const templateParams = { to_email: emailTarget, email: emailTarget, code: code };
+        emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams)
+            .then(() => { window.showVerificationUI(code, callback); })
+            .catch((err) => {
+                alert("Email failed: " + err.text);
+                if(auth.currentUser) auth.currentUser.delete().catch(() => {});
+            });
     };
 
-    window.loginWithGoogle = function() {
-        const provider = new GoogleAuthProvider();
-        signInWithPopup(auth, provider).then((result) => {
-            const user = result.user;
-            if (!user.email.endsWith('@gmail.com')) {
-                alert("Only @gmail.com accounts are allowed.");
-                signOut(auth);
-                return;
-            }
-
-            signOut(auth).then(() => {
-                window.currentUser = null;
-                const sanitizedEmail = user.email.replace(/\./g, ',');
-                const userRef = ref(database, 'users/' + sanitizedEmail);
-
-                get(userRef).then((snapshot) => {
-                    isGoogleFlow = true;
-                    generatedCode = Math.floor(100000 + Math.random() * 900000).toString();
-                    
-                    tempAuthData = { 
-                        user: user, 
-                        exists: snapshot.exists(), 
-                        sanitizedEmail: sanitizedEmail,
-                        snapshotVal: snapshot.val()
-                    };
-
-                    sendVerificationEmail(user.email, generatedCode, () => {
-                        document.getElementById('auth-inputs-container').classList.add('hidden');
-                        document.getElementById('verification-container').classList.remove('hidden');
+    window.loginUser = () => {
+        const e = document.getElementById('authEmail').value.trim();
+        const p = document.getElementById('authPassword').value;
+        signInWithEmailAndPassword(auth, e, p)
+            .then(() => {
+                const targetEmail = auth.currentUser.email;
+                signOut(auth).then(() => {
+                    sendOtpEmail(targetEmail, () => {
+                        signInWithEmailAndPassword(auth, e, p).then(() => showPage('main-page'));
                     });
                 });
-            });
-        }).catch((error) => {
-            alert("Google Sign In failed: " + error.message);
-        });
+            })
+            .catch(err => alert(err.message));
     };
 
-    document.getElementById('verify-code-btn').onclick = function() {
-        const codeInput = document.getElementById('verificationCodeInput').value.trim();
-        if (codeInput !== generatedCode) {
-            alert("Incorrect verification code.");
+    window.signupUser = () => {
+        const e = document.getElementById('authEmail').value.trim();
+        const p = document.getElementById('authPassword').value;
+
+        if (!isGmail(e)) {
+            alert("Registration is restricted to @gmail.com domains only.");
+            return;
+        }
+        if (p.length < 6) {
+            alert("Password must be at least 6 characters long.");
             return;
         }
 
-        document.getElementById('verification-container').classList.add('hidden');
-
-        if (isGoogleFlow) {
-            if (tempAuthData.exists) {
-                document.getElementById('google-existing-container').classList.remove('hidden');
-            } else {
-                document.getElementById('google-new-container').classList.remove('hidden');
-            }
-        } else {
-            const { email, password } = tempAuthData;
-            signInWithEmailAndPassword(auth, email, password)
-                .then((userCredential) => {
-                    alert("Logged in successfully!");
+        // Send OTP first before officially creating the backend account configuration
+        sendOtpEmail(e, () => {
+            createUserWithEmailAndPassword(auth, e, p)
+                .then(() => {
+                    alert("Account registered successfully!");
                     showPage('main-page');
                 })
-                .catch((loginError) => {
-                    if (loginError.code === 'auth/user-not-found' || loginError.code === 'auth/invalid-credential') {
-                        createUserWithEmailAndPassword(auth, email, password)
-                            .then((userCredential) => {
-                                const sanitizedEmail = email.replace(/\./g, ',');
-                                set(ref(database, 'users/' + sanitizedEmail), {
-                                    email: email,
-                                    password: password,
-                                    uid: userCredential.user.uid
-                                }).then(() => {
-                                    alert("Account created successfully!");
-                                    showPage('main-page');
-                                });
-                            })
-                            .catch((createError) => {
-                                alert("Authentication error: " + createError.message);
-                            });
-                    } else {
-                        alert("Login Error: " + loginError.message);
-                    }
-                });
-        }
+                .catch(err => alert(err.message));
+        });
     };
 
-    window.showGooglePasswordUpdate = function() {
+    // --- NEW GOOGLE SIGN IN LOGIC HANDLERS ---
+
+    window.loginWithGoogle = () => {
+        signInWithPopup(auth, googleProvider)
+            .then((result) => {
+                const isNewUser = result._tokenResponse.isNewUser;
+                googleUserRef = result.user;
+
+                // Hide basic menu options
+                document.getElementById('auth-inputs-container').classList.add('hidden');
+
+                if (isNewUser) {
+                    // Scenario: User does not have an account -> Prompt for new password
+                    document.getElementById('google-new-container').classList.remove('hidden');
+                } else {
+                    // Scenario: User already has an account -> Offer the 2 required paths
+                    document.getElementById('google-existing-container').classList.remove('hidden');
+                }
+            })
+            .catch((err) => {
+                alert("Google sign-in failed: " + err.message);
+                cancelGoogleFlow();
+            });
+    };
+
+    window.continueWithOldPassword = () => {
+        alert("Welcome back!");
+        resetGoogleFlowUIVisibility();
+        showPage('main-page');
+    };
+
+    window.showGooglePasswordUpdate = () => {
         document.getElementById('google-existing-container').classList.add('hidden');
         document.getElementById('google-update-container').classList.remove('hidden');
     };
 
-    window.continueWithOldPassword = function() {
-        const oldPassword = tempAuthData.snapshotVal.password;
-        signInWithEmailAndPassword(auth, tempAuthData.user.email, oldPassword).then(() => {
-            alert("Logged in safely using existing credentials.");
-            showPage('main-page');
-        }).catch(err => alert(err.message));
-    };
+    window.saveGoogleUpdatedPassword = () => {
+        const newPassword = document.getElementById('googleUpdatePassword').value;
+        if (newPassword.length < 6) {
+            alert("Password must be at least 6 characters.");
+            return;
+        }
 
-    window.saveGoogleNewPassword = function() {
-        const newPassword = document.getElementById('googleNewPassword').value;
-        if(newPassword.length < 6) { alert("Password must be at least 6 characters."); return; }
-
-        createUserWithEmailAndPassword(auth, tempAuthData.user.email, newPassword).then((cred) => {
-            set(ref(database, 'users/' + tempAuthData.sanitizedEmail), {
-                email: tempAuthData.user.email,
-                password: newPassword,
-                uid: cred.user.uid
-            }).then(() => {
-                alert("Account secured and registered successfully!");
+        updatePassword(googleUserRef, newPassword)
+            .then(() => {
+                alert("Password updated successfully!");
+                resetGoogleFlowUIVisibility();
                 showPage('main-page');
-            });
-        }).catch(err => alert(err.message));
+            })
+            .catch((err) => alert("Error updating password: " + err.message));
     };
 
-    window.saveGoogleUpdatedPassword = function() {
-        const updatedPassword = document.getElementById('googleUpdatePassword').value;
-        if(updatedPassword.length < 6) { alert("Password must be at least 6 characters."); return; }
+    window.saveGoogleNewPassword = () => {
+        const newPassword = document.getElementById('googleNewPassword').value;
+        if (newPassword.length < 6) {
+            alert("Password must be at least 6 characters.");
+            return;
+        }
 
-        signInWithEmailAndPassword(auth, tempAuthData.user.email, tempAuthData.snapshotVal.password).then(() => {
-            auth.currentUser.updatePassword(updatedPassword).then(() => {
-                update(ref(database, 'users/' + tempAuthData.sanitizedEmail), { password: updatedPassword }).then(() => {
-                    alert("Password updated and logged in successfully!");
-                    showPage('main-page');
-                });
-            }).catch(err => alert("Re-auth step failed to commit update: " + err.message));
-        }).catch(err => alert("Internal verification failed: " + err.message));
+        updatePassword(googleUserRef, newPassword)
+            .then(() => {
+                alert("Account secured with password successfully!");
+                resetGoogleFlowUIVisibility();
+                showPage('main-page');
+            })
+            .catch((err) => alert("Error saving password: " + err.message));
     };
 
-    window.cancelVerificationFlow = function() {
-        document.getElementById('verification-container').classList.add('hidden');
-        document.getElementById('auth-inputs-container').classList.remove('hidden');
-        generatedCode = null;
-        tempAuthData = null;
-    };
-
-    window.cancelGoogleFlow = function() {
-        document.getElementById('google-update-container').classList.add('hidden');
-        document.getElementById('auth-inputs-container').classList.remove('hidden');
-        tempAuthData = null;
-    };
-
-    window.logoutUser = function() {
+    window.cancelGoogleFlow = () => {
         signOut(auth).then(() => {
-            alert("Logged out safely.");
-            showPage('main-page');
+            resetGoogleFlowUIVisibility();
         });
     };
 
-    function sendVerificationEmail(targetEmail, safetyCode, successCallback) {
-        const templateParams = {
-            to_email: targetEmail,
-            verification_code: safetyCode
-        };
-
-        emailjs.send('service_j9fup9q', 'template_6gqbe6n', templateParams)
-            .then(function(response) {
-                console.log('SUCCESS!', response.status, response.text);
-                if(successCallback) successCallback();
-            }, function(error) {
-                console.log('FAILED...', error);
-                alert("Failed to send verification email. Please try again. System error code: " + JSON.stringify(error));
-            });
+    function resetGoogleFlowUIVisibility() {
+        document.getElementById('google-existing-container').classList.add('hidden');
+        document.getElementById('google-new-container').classList.add('hidden');
+        document.getElementById('google-update-container').classList.add('hidden');
+        document.getElementById('auth-inputs-container').classList.remove('hidden');
+        googleUserRef = null;
     }
+
+    // --- APPLICATION RUNTIME LISTENERS ---
+
+    onAuthStateChanged(auth, (user) => {
+        window.currentUser = user;
+        const navAuthBtn = document.getElementById('nav-auth-btn');
+        const navProfileBtn = document.getElementById('nav-profile-btn');
+
+        if (user) {
+            if (navAuthBtn) navAuthBtn.classList.add('hidden');
+            if (navProfileBtn) navProfileBtn.classList.remove('hidden');
+            
+            const displayEmail = document.getElementById('displayEmail');
+            const displayUid = document.getElementById('displayUid');
+            if (displayEmail) displayEmail.innerText = user.email;
+            if (displayUid) displayUid.innerText = "UID: " + user.uid;
+
+            if (localStorage.getItem('activeSubscription')) {
+                const cancelBtn = document.getElementById('profileCancelSub');
+                if (cancelBtn) cancelBtn.style.display = 'block';
+            }
+        } else {
+            if (navAuthBtn) navAuthBtn.classList.remove('hidden');
+            if (navProfileBtn) navProfileBtn.classList.add('hidden');
+        }
+        checkSilentValidation();
+    });
 </script>
+
 </body>
 </html>
