@@ -12,7 +12,6 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <script type="text/javascript">
         (function() {
-            // Initialize EmailJS with your Public Key
             emailjs.init("NFfpza5ndHKX5cbbw"); 
         })();
     </script>
@@ -217,7 +216,6 @@
             box-shadow:0 0 15px var(--accent-glow);
         }
 
-        /* --- VERTICAL COMPARE STYLES --- */
         .compare-container {
             display: flex;
             flex-direction: column;
@@ -265,10 +263,6 @@
             text-align: right;
         }
 
-        .check-icon{
-            color:#00ff88;
-        }
-
         .input-wrapper{
             margin-bottom:1.5rem;
         }
@@ -294,6 +288,13 @@
             border-color:var(--accent-light);
             outline:none;
             background:rgba(255,255,255,.08);
+        }
+
+        input[readonly] {
+            background: rgba(255, 255, 255, 0.02);
+            border-color: rgba(255, 255, 255, 0.05);
+            color: var(--text-dim);
+            cursor: not-allowed;
         }
 
         #paypal-button-container{
@@ -373,7 +374,6 @@
             color: white !important;
         }
 
-        /* --- PROJECTS GALLERY STYLES --- */
         .projects-grid{
             display: flex;
             flex-direction: column;
@@ -499,7 +499,7 @@
                 <input type="text" id="clientDiscord" placeholder="Discord Username (Optional)" oninput="checkSilentValidation()" style="margin-bottom:1.5rem">
             </div>
             <div class="input-wrapper">
-                <textarea id="projectDetails" rows="3" placeholder="Describe your vision..." oninput="checkSilentValidation()"></textarea>
+                <textarea id="projectDetails" rows="3" placeholder="Describe your vision... (min 6 characters.) " oninput="checkSilentValidation()"></textarea>
             </div>
 
             <div id="paypal-button-container"></div>
@@ -516,7 +516,6 @@
         <p style="color:var(--text-dim)">Portfolio of our premium builds</p>
     </header>
     <div class="projects-grid" id="projects-gallery"></div>
-    <button class="submit-btn" style="margin-top:3rem; max-width: 200px;" onclick="showPage('main-page')">Back to Home</button>
 </main>
 
 <main id="details-page" class="page-view hidden">
@@ -531,9 +530,9 @@
             </div>
             <div class="compare-group">
                 <div class="compare-header">Design & UI</div>
-                <div class="compare-row"><div class="compare-label">Basic</div><div class="compare-value">✓ Custom UI/UX</div></div>
-                <div class="compare-row"><div class="compare-label">Advanced</div><div class="compare-value">✓ Premium Animations</div></div>
-                <div class="compare-row"><div class="compare-label">Premium</div><div class="compare-value">✓ Full Custom Branding</div></div>
+                <div class="compare-row"><div class="compare-label">Basic</div><div class="compare-value">Custom UI/UX</div></div>
+                <div class="compare-row"><div class="compare-label">Advanced</div><div class="compare-value">Premium Animations</div></div>
+                <div class="compare-row"><div class="compare-label">Premium</div><div class="compare-value">Full Custom Branding</div></div>
             </div>
             <div class="compare-group">
                 <div class="compare-header">Support</div>
@@ -551,16 +550,11 @@
     <div class="glass-card">
         <form onsubmit="sendSupportMessage(event)">
             <h3 style="color: #fff; margin-bottom: 1.5rem;">Open a Ticket</h3>
-            <input type="text" id="supportProjectName" placeholder="Project Name/ Question" style="margin-bottom:1rem" required>
+            <input type="text" id="supportProjectName" placeholder="Project Name / Question" style="margin-bottom:1rem" required>
             <input type="email" id="supportEmail" placeholder="Gmail Address" style="margin-bottom:1rem" required>
             <textarea id="supportDescription" rows="5" placeholder="How can we help?" style="margin-bottom:1.5rem" required></textarea>
             <button type="submit" class="submit-btn">Submit Ticket</button>
         </form>
-        <div style="margin-top: 3rem; text-align: center; border-top: 1px solid var(--glass-border); padding-top: 1.5rem;">
-            <p style="color: var(--text-dim); font-size: 0.8rem;">
-                Official Discord: <span style="color: var(--accent-light)">OG Websites</span><br>
-            </p>
-        </div>
     </div>
 </main>
 
@@ -601,11 +595,11 @@
             <p id="displayUid" style="color: var(--text-dim); font-size: 0.8rem;">UID: 00000000</p>
         </div>
         
-        <button type="button" class="submit-btn cancel-sub-btn" id="profileCancelSub" style="margin-bottom:1rem; display:none;" onclick="cancelSubscription()">
+        <button type="button" class="submit-btn cancel-sub-btn" id="profileCancelSub" onclick="cancelSubscription()">
             Cancel Active Subscription
         </button>
         
-        <button class="submit-btn" style="background: rgba(255, 77, 77, 0.1); border: 1px solid #ff4d4d; color: #ff4d4d;" onclick="logoutUser()">
+        <button class="submit-btn" style="background: rgba(255, 77, 77, 0.1); border: 1px solid #ff4d4d; color: #ff4d4d; margin-top: 1rem;" onclick="logoutUser()">
             Logout of Account
         </button>
     </div>
@@ -773,6 +767,15 @@
     const EMAILJS_SERVICE_ID = "service_h4rczgj";
     const EMAILJS_TEMPLATE_ID = "template_5mf0dpa";
 
+    // GLOBAL LOGOUT FUNCTION (Auto-Refresh)
+    window.logoutUser = () => {
+        signOut(auth)
+            .then(() => {
+                window.location.reload(); 
+            })
+            .catch((err) => alert(err.message));
+    };
+
     window.showVerificationUI = (code, actionCallback) => {
         generatedCode = code;
         pendingAction = actionCallback;
@@ -782,7 +785,6 @@
     };
 
     window.cancelVerificationFlow = () => {
-        // If they click cancel on verification, delete the temporary user account to clear the slot
         if(auth.currentUser) {
             auth.currentUser.delete().catch(() => {});
         }
@@ -799,118 +801,92 @@
                 pendingAction();
             }
         } else {
-            alert("Invalid security code. Please check your email and try again.");
+            alert("Invalid security code.");
         }
     };
 
     const sendOtpEmail = (emailTarget, callback) => {
         const code = Math.floor(100000 + Math.random() * 900000);
-        
-        const templateParams = {
-            to_email: emailTarget, 
-            email: emailTarget,     
-            code: code
-        };
-
+        const templateParams = { to_email: emailTarget, email: emailTarget, code: code };
         emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams)
-            .then(() => {
-                window.showVerificationUI(code, callback);
-            })
+            .then(() => { window.showVerificationUI(code, callback); })
             .catch((err) => {
-                alert("Failed to send verification code email: " + err.text);
-                // Clean up user if code fails to send completely
+                alert("Email failed: " + err.text);
                 if(auth.currentUser) auth.currentUser.delete().catch(() => {});
-            });
-    };
-
-    window.loginWithGoogle = () => {
-        signInWithPopup(auth, googleProvider)
-            .then((result) => {
-                const targetEmail = result.user.email; 
-                if (!targetEmail) {
-                    alert("Could not retrieve email address from Google Account profile.");
-                    return;
-                }
-                signOut(auth).then(() => {
-                    sendOtpEmail(targetEmail, () => {
-                        signInWithPopup(auth, googleProvider)
-                            .then(() => showPage('main-page'))
-                            .catch(err => alert(err.message));
-                    });
-                });
-            })
-            .catch(err => alert(err.message));
-    };
-
-    // FIXED: Checks database existence instantly before running EmailJS using built-in hooks
-    window.signupUser = () => {
-        const e = document.getElementById('authEmail').value.trim();
-        const p = document.getElementById('authPassword').value;
-        if(!isGmail(e)){ alert("Gmail only."); return; }
-        if(p.length < 6){ alert("Password must be at least 6 characters."); return; }
-
-        // Attempt account registration directly.
-        createUserWithEmailAndPassword(auth, e, p)
-            .then(() => {
-                // Account created successfully! It is a fresh user. Now we send the verification email.
-                sendOtpEmail(e, () => {
-                    // Verification success callback: Send user directly to home page
-                    showPage('main-page');
-                });
-            })
-            .catch((error) => {
-                // If it is already registered in the DB, Firebase blocks execution here natively!
-                if (error.code === 'auth/email-already-in-use') {
-                    alert("This Gmail is already in use. Please log in instead.");
-                } else {
-                    alert(error.message);
-                }
             });
     };
 
     window.loginUser = () => {
         const e = document.getElementById('authEmail').value.trim();
         const p = document.getElementById('authPassword').value;
-        if(!isGmail(e)){ alert("Gmail only."); return; }
-
         signInWithEmailAndPassword(auth, e, p)
             .then(() => {
+                const targetEmail = auth.currentUser.email;
                 signOut(auth).then(() => {
-                    sendOtpEmail(e, () => {
-                        signInWithEmailAndPassword(auth, e, p)
-                            .then(() => showPage('main-page'))
-                            .catch(err => alert(err.message));
+                    sendOtpEmail(targetEmail, () => {
+                        signInWithEmailAndPassword(auth, e, p).then(() => showPage('main-page'));
                     });
                 });
             })
             .catch(err => alert(err.message));
     };
 
-    window.logoutUser = () => signOut(auth).then(()=>showPage('main-page'));
+    window.signupUser = () => {
+        const e = document.getElementById('authEmail').value.trim();
+        const p = document.getElementById('authPassword').value;
+        if(!isGmail(e)){ alert("Gmail only."); return; }
+        if(p.length < 6){ alert("Password too short."); return; }
 
-    onAuthStateChanged(auth,(user)=>{
-        const navAuth = document.getElementById('nav-auth-btn');
-        const navProfile = document.getElementById('nav-profile-btn');
-        const authStatus = document.getElementById('authStatus');
+        createUserWithEmailAndPassword(auth, e, p)
+            .then(() => {
+                sendOtpEmail(e, () => { showPage('main-page'); });
+            })
+            .catch((error) => alert(error.message));
+    };
+
+    window.loginWithGoogle = () => {
+        signInWithPopup(auth, googleProvider)
+            .then((result) => {
+                const targetEmail = result.user.email; 
+                signOut(auth).then(() => {
+                    sendOtpEmail(targetEmail, () => {
+                        signInWithPopup(auth, googleProvider).then(() => showPage('main-page'));
+                    });
+                });
+            })
+            .catch(err => alert(err.message));
+    };
+
+    onAuthStateChanged(auth, (user) => {
+        window.currentUser = user;
+        const clientEmailInput = document.getElementById('clientEmail');
         
-        if(user){
-            window.currentUser = user;
-            navAuth.classList.add('hidden');
-            navProfile.classList.remove('hidden');
-            authStatus.innerHTML = "Logged in as " + user.email;
-            
+        if (user) {
+            document.getElementById('nav-auth-btn').classList.add('hidden');
+            document.getElementById('nav-profile-btn').classList.remove('hidden');
             document.getElementById('displayEmail').innerText = user.email;
             document.getElementById('displayUid').innerText = "UID: " + user.uid;
             
-            const sub = localStorage.getItem('activeSubscription');
-            document.getElementById('profileCancelSub').style.display = sub ? 'block' : 'none';
+            // Set order email field and lock it down
+            if (clientEmailInput) {
+                clientEmailInput.value = user.email;
+                clientEmailInput.setAttribute('readonly', true);
+            }
+
+            if(localStorage.getItem('activeSubscription')) {
+                 document.getElementById('profileCancelSub').style.display = 'block';
+            }
         } else {
-            window.currentUser = null;
-            navAuth.classList.remove('hidden');
-            navProfile.classList.add('hidden');
-            authStatus.innerHTML = `<a id="authLink" onclick="showPage('auth-page')">Please log in to purchase</a>`;
+            document.getElementById('nav-auth-btn').classList.remove('hidden');
+            document.getElementById('nav-profile-btn').classList.add('hidden');
+            
+            // Clear email field and make it editable again
+            if (clientEmailInput) {
+                clientEmailInput.value = "";
+                clientEmailInput.removeAttribute('readonly');
+            }
         }
-        if(typeof checkSilentValidation === "function") checkSilentValidation();
+        checkSilentValidation();
     });
 </script>
 
