@@ -265,6 +265,7 @@
 
         .input-wrapper{
             margin-bottom:1.5rem;
+            position: relative;
         }
 
         input,
@@ -295,6 +296,31 @@
             border-color: rgba(255, 255, 255, 0.05);
             color: var(--text-dim);
             cursor: not-allowed;
+        }
+
+        /* Password Show/Hide Toggle Button Styles */
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            user-select: none;
+            padding: 5px;
+        }
+
+        .password-toggle:hover {
+            color: var(--accent-light);
+        }
+
+        .auth-input-container-with-toggle input {
+            padding-right: 4.5rem; /* Prevents text overlaps with the toggle button */
         }
 
         #paypal-button-container{
@@ -563,7 +589,12 @@
     <div class="glass-card">
         <div id="auth-inputs-container">
             <div class="input-wrapper"><input type="email" id="authEmail" placeholder="Gmail Address (@gmail.com only)"></div>
-            <div class="input-wrapper"><input type="password" id="authPassword" placeholder="Password (min. 6 chars)"></div>
+            
+            <div class="input-wrapper auth-input-container-with-toggle">
+                <input type="password" id="authPassword" placeholder="Password (min. 6 chars)">
+                <button type="button" class="password-toggle" id="togglePasswordBtn" onclick="togglePasswordVisibility()">SHOW</button>
+            </div>
+            
             <button class="submit-btn" id="signup-btn" style="margin-bottom:1rem;" onclick="signupUser()">Sign Up</button>
             <button class="submit-btn" id="login-btn" onclick="loginUser()">Login</button>
             <div class="auth-divider"><span>OR</span><hr></div>
@@ -703,6 +734,20 @@
         localStorage.removeItem('activeSubscription');
         document.getElementById('profileCancelSub').style.display = 'none';
         alert("Subscription cancelled.");
+    }
+
+    // Interactive Toggle Logic Function
+    function togglePasswordVisibility() {
+        const passwordInput = document.getElementById('authPassword');
+        const toggleBtn = document.getElementById('togglePasswordBtn');
+        
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            toggleBtn.innerText = 'HIDE';
+        } else {
+            passwordInput.type = 'password';
+            toggleBtn.innerText = 'SHOW';
+        }
     }
 
     paypal.Buttons({
@@ -872,23 +917,9 @@
                 clientEmailInput.value = user.email;
                 clientEmailInput.setAttribute('readonly', true);
             }
-
-            if(localStorage.getItem('activeSubscription')) {
-                 document.getElementById('profileCancelSub').style.display = 'block';
-            }
-        } else {
-            document.getElementById('nav-auth-btn').classList.remove('hidden');
-            document.getElementById('nav-profile-btn').classList.add('hidden');
-            
-            // Clear email field and make it editable again
-            if (clientEmailInput) {
-                clientEmailInput.value = "";
-                clientEmailInput.removeAttribute('readonly');
-            }
+            checkSilentValidation();
         }
-        checkSilentValidation();
     });
 </script>
-
 </body>
 </html>
