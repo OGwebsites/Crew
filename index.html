@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OG Websites | Premium Development</title>
 
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=300;400;600;800&display=swap" rel="stylesheet">
 
     <script src="https://www.paypal.com/sdk/js?client-id=AbvoNQiduLHQzN2OpamkoIUbGPPMLCjiiIWabtl3UZ-wMY4IuWnNcT1KtPG65JbNfMLDXFwoIMleQGfR&vault=true&intent=subscription"></script>
 
@@ -291,6 +291,13 @@
             background:rgba(255,255,255,.08);
         }
 
+        input[readonly] {
+            background: rgba(255, 255, 255, 0.02);
+            border-color: rgba(255, 255, 255, 0.05);
+            color: var(--text-dim);
+            cursor: not-allowed;
+        }
+
         .password-toggle {
             position: absolute;
             right: 15px;
@@ -305,6 +312,14 @@
             transition: 0.2s;
             user-select: none;
             padding: 5px;
+        }
+
+        .password-toggle:hover {
+            color: var(--accent-light);
+        }
+
+        .auth-input-container-with-toggle input {
+            padding-right: 4.5rem;
         }
 
         #paypal-button-container{
@@ -335,6 +350,14 @@
             transform:translateY(-2px);
         }
 
+        .submit-btn:disabled {
+            background: #1e293b;
+            color: #64748b;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
         .auth-status{
             text-align:center;
             margin-top:1rem;
@@ -347,6 +370,12 @@
             text-decoration: none;
             font-weight: 600;
             cursor: pointer;
+            transition: 0.3s;
+        }
+
+        #authLink:hover {
+            text-decoration: underline;
+            filter: brightness(1.2);
         }
 
         .auth-divider {
@@ -357,7 +386,7 @@
             position: relative;
         }
         .auth-divider span {
-            background: #0d1117; 
+            background: var(--bg); 
             padding: 0 10px; 
             position: relative; 
             z-index: 1;
@@ -397,12 +426,33 @@
             width: 100%;
             max-width: 500px;
             height: 650px;
+            opacity: 0.9;
+        }
+
+        .project-card:hover{
+            transform: scale(1.03) translateY(-10px);
+            box-shadow:0 0 30px var(--accent-glow);
+            opacity: 1;
+        }
+
+        .project-card img{
+            width:100%;
+            height:100%;
+            object-fit:cover;
+            display: block;
         }
 
         @media(max-width:600px){
-            .tier-selection-grid{grid-template-columns:1fr;}
-            header h1{font-size:2.5rem;}
-            .project-card {height: 400px;}
+            .tier-selection-grid{
+                grid-template-columns:1fr;
+            }
+            header h1{
+                font-size:2.5rem;
+            }
+            .project-card {
+                height: 400px;
+                max-width: 95%;
+            }
         }
     </style>
 </head>
@@ -410,17 +460,35 @@
 
 <nav>
     <div class="nav-container" onclick="showPage('main-page')">
-        <img src="https://i.postimg.cc/k5KcZgbm/OG-logo.png" class="nav-logo-img" alt="OG Websites Logo">
-        <div class="gradient-text" style="font-weight:800;font-size:1.8rem;letter-spacing:3px;">WEBSITES</div>
+        <img src="https://i.postimg.cc/k5KcZgbm/OG-logo.png" 
+             class="nav-logo-img" 
+             alt="OG Websites Logo">
+        <div class="gradient-text" style="font-weight:800;font-size:1.8rem;letter-spacing:3px;">
+            WEBSITES
+        </div>
     </div>
 
     <div class="nav-buttons">
-        <button class="btn-secondary" onclick="showPage('main-page')">Home</button>
-        <button class="btn-secondary" onclick="showPage('projects-page')">Our Projects</button>
-        <button class="btn-secondary" onclick="showPage('details-page')">Compare Plans</button>
-        <button class="btn-secondary" onclick="showPage('support-page')">Support</button>
-        <button class="btn-secondary" id="nav-auth-btn" onclick="showPage('auth-page')">Login / Sign Up</button>
-        <button class="btn-secondary hidden" id="nav-profile-btn" onclick="showPage('profile-page')">Profile</button>
+        <button class="btn-secondary" onclick="showPage('main-page')">
+            <img src="https://img.icons8.com/material-rounded/48/home.png" alt="home">
+            Home
+        </button>
+        <button class="btn-secondary" onclick="showPage('projects-page')">
+            Our Projects
+        </button>
+        <button class="btn-secondary" onclick="showPage('details-page')">
+            Compare Plans
+        </button>
+        <button class="btn-secondary" onclick="showPage('support-page')">
+            Support
+        </button>
+        <button class="btn-secondary" id="nav-auth-btn" onclick="showPage('auth-page')">
+            Login / Sign Up
+        </button>
+        <button class="btn-secondary hidden" id="nav-profile-btn" onclick="showPage('profile-page')">
+            <img src="https://img.icons8.com/material-rounded/48/user.png" alt="profile">
+            Profile
+        </button>
     </div>
 </nav>
 
@@ -432,21 +500,40 @@
 
     <div class="billing-toggle">
         <div class="toggle-opt active" id="btn-monthly" onclick="setBilling('monthly')">Monthly</div>
-        <div class="toggle-opt" id="btn-yearly" onclick="setBilling('yearly')">Yearly <span style="color:#00ff88;font-size:.7rem;">-20%</span></div>
+        <div class="toggle-opt" id="btn-yearly" onclick="setBilling('yearly')">
+            Yearly <span style="color:#00ff88;font-size:.7rem;">-20%</span>
+        </div>
     </div>
 
     <div class="glass-card">
         <form id="orderForm">
             <div class="tier-selection-grid">
-                <div class="tier-card selected" onclick="selectTier('Basic',this)"><b>Basic</b><br><span class="price-label" style="color:var(--accent-light)">$19.99</span></div>
-                <div class="tier-card" onclick="selectTier('Advanced',this)"><b>Advanced</b><br><span class="price-label" style="color:var(--accent-light)">$39.99</span></div>
-                <div class="tier-card" onclick="selectTier('Premium',this)"><b>Premium</b><br><span class="price-label" style="color:var(--accent-light)">$79.99</span></div>
+                <div class="tier-card selected" onclick="selectTier('Basic',this)">
+                    <b>Basic</b><br>
+                    <span class="price-label" style="color:var(--accent-light)">$19.99</span>
+                </div>
+                <div class="tier-card" onclick="selectTier('Advanced',this)">
+                    <b>Advanced</b><br>
+                    <span class="price-label" style="color:var(--accent-light)">$39.99</span>
+                </div>
+                <div class="tier-card" onclick="selectTier('Premium',this)">
+                    <b>Premium</b><br>
+                    <span class="price-label" style="color:var(--accent-light)">$79.99</span>
+                </div>
             </div>
 
-            <div class="input-wrapper"><input type="text" id="clientName" placeholder="Full Name" oninput="checkSilentValidation()"></div>
-            <div class="input-wrapper"><input type="email" id="clientEmail" placeholder="Gmail Address" oninput="checkSilentValidation()"></div>
-            <div class="input-wrapper"><input type="text" id="clientDiscord" placeholder="Discord Username (Optional)" oninput="checkSilentValidation()"></div>
-            <div class="input-wrapper"><textarea id="projectDetails" rows="3" placeholder="Describe your vision..." oninput="checkSilentValidation()"></textarea></div>
+            <div class="input-wrapper">
+                <input type="text" id="clientName" placeholder="Full Name" oninput="checkSilentValidation()">
+            </div>
+            <div class="input-wrapper">
+                <input type="email" id="clientEmail" placeholder="Gmail Address" oninput="checkSilentValidation()">
+            </div>
+            <div class="input-wrapper">
+                <input type="text" id="clientDiscord" placeholder="Discord Username (Optional)" oninput="checkSilentValidation()" style="margin-bottom:1.5rem">
+            </div>
+            <div class="input-wrapper">
+                <textarea id="projectDetails" rows="3" placeholder="Describe your vision... (min 6 characters.) " oninput="checkSilentValidation()"></textarea>
+            </div>
 
             <div id="paypal-button-container"></div>
             <div class="auth-status" id="authStatus">
@@ -457,23 +544,106 @@
 </main>
 
 <main id="projects-page" class="page-view hidden">
-    <header><h1 class="gradient-text">Our Projects</h1></header>
+    <header>
+        <h1 class="gradient-text">Our Projects</h1>
+        <p style="color:var(--text-dim)">Portfolio of our premium builds</p>
+    </header>
     <div class="projects-grid" id="projects-gallery"></div>
+</main>
+
+<main id="details-page" class="page-view hidden">
+    <header><h1 class="gradient-text">Plan Comparison</h1></header>
+    <div class="glass-card">
+        <div class="compare-container">
+            <div class="compare-group">
+                <div class="compare-header">Capacity & Pages</div>
+                <div class="compare-row"><div class="compare-label">Basic</div><div class="compare-value">Up to 3 Pages</div></div>
+                <div class="compare-row"><div class="compare-label">Advanced</div><div class="compare-value">Up to 8 Pages</div></div>
+                <div class="compare-row"><div class="compare-label">Premium</div><div class="compare-value">Unlimited Pages</div></div>
+            </div>
+            <div class="compare-group">
+                <div class="compare-header">Design & UI</div>
+                <div class="compare-row"><div class="compare-label">Basic</div><div class="compare-value">Custom UI/UX</div></div>
+                <div class="compare-row"><div class="compare-label">Advanced</div><div class="compare-value">Premium Animations</div></div>
+                <div class="compare-row"><div class="compare-label">Premium</div><div class="compare-value">Full Custom Branding</div></div>
+            </div>
+            <div class="compare-group">
+                <div class="compare-header">Support</div>
+                <div class="compare-row"><div class="compare-label">Basic</div><div class="compare-value">Email Only</div></div>
+                <div class="compare-row"><div class="compare-label">Advanced</div><div class="compare-value">Priority Email</div></div>
+                <div class="compare-row"><div class="compare-label">Premium</div><div class="compare-value">24/7 Discord & Phone</div></div>
+            </div>
+        </div>
+        <button class="submit-btn" style="margin-top:2rem;" onclick="showPage('main-page')">Back to Home</button>
+    </div>
+</main>
+
+<main id="support-page" class="page-view hidden">
+    <header><h1 class="gradient-text">Support Center</h1></header>
+    <div class="glass-card">
+        <form onsubmit="sendSupportMessage(event)">
+            <h3 style="color: #fff; margin-bottom: 1.5rem;">Open a Ticket</h3>
+            <input type="text" id="supportProjectName" placeholder="Project Name / Question" style="margin-bottom:1rem" required>
+            <input type="email" id="supportEmail" placeholder="Gmail Address" style="margin-bottom:1rem" required>
+            <textarea id="supportDescription" rows="5" placeholder="How can we help?" style="margin-bottom:1.5rem" required></textarea>
+            <button type="submit" class="submit-btn">Submit Ticket</button>
+        </form>
+    </div>
 </main>
 
 <main id="auth-page" class="page-view hidden">
     <header><h1 class="gradient-text">Account Access</h1></header>
     <div class="glass-card">
+        <!-- Main Auth View -->
         <div id="auth-inputs-container">
-            <div class="input-wrapper"><input type="email" id="authEmail" placeholder="Gmail Address (@gmail.com)"></div>
-            <div class="input-wrapper">
+            <div class="input-wrapper"><input type="email" id="authEmail" placeholder="Gmail Address (@gmail.com only)"></div>
+            
+            <div class="input-wrapper auth-input-container-with-toggle">
                 <input type="password" id="authPassword" placeholder="Password (min. 6 chars)">
-                <button type="button" class="password-toggle" onclick="togglePass('authPassword')">SHOW</button>
+                <button type="button" class="password-toggle" id="togglePasswordBtn" onclick="togglePasswordVisibility()">SHOW</button>
             </div>
-            <button class="submit-btn" style="margin-bottom:1rem;" onclick="signupUser()">Sign Up</button>
-            <button class="submit-btn" onclick="loginUser()">Login</button>
+            
+            <button class="submit-btn" id="signup-btn" style="margin-bottom:1rem;" onclick="signupUser()">Sign Up</button>
+            <button class="submit-btn" id="login-btn" onclick="loginUser()">Login</button>
             <div class="auth-divider"><span>OR</span><hr></div>
-            <button class="submit-btn" style="background:#fff;color:#000;" onclick="loginWithGoogle()">Continue with Google</button>
+            <button class="submit-btn" id="google-btn" style="background: #fff; color: #000; display: flex; align-items: center; justify-content: center; gap: 10px;" onclick="loginWithGoogle()">
+                <img src="https://img.icons8.com/color/48/google-logo.png" style="height:20px; width:20px;" alt="Google">
+                Continue with Google
+            </button>
+        </div>
+
+        <!-- Google Existing User Options -->
+        <div id="google-existing-container" class="hidden" style="margin-top: 1rem; text-align: center;">
+            <div class="auth-divider"><span>WELCOME BACK</span><hr></div>
+            <p style="color: var(--text-dim); margin-bottom: 1.5rem; font-size: 0.9rem;">
+                You already have an account. Choose an option to proceed:
+            </p>
+            <button class="submit-btn" style="background: var(--accent-light); color: #000; margin-bottom: 1rem;" onclick="showGooglePasswordUpdate()">1. Update Current Password</button>
+            <button class="submit-btn" style="background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--glass-border);" onclick="continueWithOldPassword()">2. Continue with Current Password</button>
+        </div>
+
+        <!-- Google New User Password Creation -->
+        <div id="google-new-container" class="hidden" style="margin-top: 1rem;">
+            <div class="auth-divider"><span>SET ACCOUNT PASSWORD</span><hr></div>
+            <p style="color: var(--text-dim); text-align: center; margin-bottom: 1rem; font-size: 0.9rem;">
+                Set a security password for your new account to ensure safe direct access.
+            </p>
+            <div class="input-wrapper auth-input-container-with-toggle">
+                <input type="password" id="googleNewPassword" placeholder="New Password (min. 6 chars)">
+                <button type="button" class="password-toggle" id="toggleGoogleNewPasswordBtn" onclick="togglePasswordVisibilityId('googleNewPassword', 'toggleGoogleNewPasswordBtn')">SHOW</button>
+            </div>
+            <button class="submit-btn" style="background: #00ff88; color: #000;" onclick="saveGoogleNewPassword()">Create Password & Continue</button>
+        </div>
+
+        <!-- Google Update Password Form -->
+        <div id="google-update-container" class="hidden" style="margin-top: 1rem;">
+            <div class="auth-divider"><span>UPDATE PASSWORD</span><hr></div>
+            <div class="input-wrapper auth-input-container-with-toggle">
+                <input type="password" id="googleUpdatePassword" placeholder="Enter New Password (min. 6 chars)">
+                <button type="button" class="password-toggle" id="toggleGoogleUpdatePasswordBtn" onclick="togglePasswordVisibilityId('googleUpdatePassword', 'toggleGoogleUpdatePasswordBtn')">SHOW</button>
+            </div>
+            <button class="submit-btn" style="background: #00ff88; color: #000; margin-bottom: 1rem;" onclick="saveGoogleUpdatedPassword()">Update & Proceed</button>
+            <button class="submit-btn" style="background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--glass-border);" onclick="resetAuthUI()">Cancel</button>
         </div>
     </div>
 </main>
@@ -481,24 +651,44 @@
 <main id="profile-page" class="page-view hidden">
     <header><h1 class="gradient-text">Your Profile</h1></header>
     <div class="glass-card" style="text-align: center;">
-        <h3 id="displayEmail" style="color:#fff;">Email</h3>
-        <p id="displayUid" style="color:var(--text-dim);font-size:0.8rem;margin-bottom:2rem;">UID</p>
-        <button class="submit-btn" style="background:rgba(255,77,77,0.1);color:#ff4d4d;border:1px solid #ff4d4d" onclick="logoutUser()">Logout</button>
+        <div id="profile-details" style="margin-bottom: 2rem;">
+            <h3 id="displayEmail" style="color: #fff; margin-bottom: 0.5rem;">User Email</h3>
+            <p id="displayUid" style="color: var(--text-dim); font-size: 0.8rem;">UID: 00000000</p>
+        </div>
+        
+        <button type="button" class="submit-btn cancel-sub-btn" id="profileCancelSub" onclick="cancelSubscription()">
+            Cancel Active Subscription
+        </button>
+        
+        <button class="submit-btn" style="background: rgba(255, 77, 77, 0.1); border: 1px solid #ff4d4d; color: #ff4d4d; margin-top: 1rem;" onclick="logoutUser()">
+            Logout of Account
+        </button>
     </div>
 </main>
 
 <script>
-    // --- NON-MODULE HELPERS ---
-    function showPage(id){
-        document.querySelectorAll('.page-view').forEach(p=>p.classList.add('hidden'));
-        document.getElementById(id).classList.remove('hidden');
-        window.scrollTo(0,0);
+    const ORDER_WEBHOOK = "https://discord.com/api/webhooks/1501632580058091570/OHmK0Vr6ZqpfQ5RtS9obRk6ulU5fj_L8xr_80LI9vlSKgmXV1FHIHDZEHRqG4iouNdPQ";
+    const SUPPORT_WEBHOOK = "https://discord.com/api/webhooks/1501632588157288458/9TThDm--A1c1LD2kDodKSvATT4ZikRc8lfPiUrhLbaStTLeqQvIrwEnosMtV91n8BXLb";
+
+    const PROJECT_IMAGES = [
+        "https://i.postimg.cc/bvZX2bW0/Restaurant-temp-1.png", 
+        "https://i.postimg.cc/26Bfgvx4/e-comerces-temp-1.png",
+        "https://i.postimg.cc/g0spvm2d/dropshipping-temp-1.png"
+    ];
+
+    function loadProjects() {
+        const container = document.getElementById('projects-gallery');
+        if(!container) return;
+        container.innerHTML = "";
+        PROJECT_IMAGES.forEach(url => {
+            const card = document.createElement('div');
+            card.className = "project-card";
+            card.innerHTML = `<img src="${url}" alt="Project View">`;
+            container.appendChild(card);
+        });
     }
 
-    function togglePass(id){
-        const input = document.getElementById(id);
-        input.type = input.type === 'password' ? 'text' : 'password';
-    }
+    window.addEventListener('DOMContentLoaded', loadProjects);
 
     let currentTier = 'Basic';
     let billingCycle = 'monthly';
@@ -507,8 +697,17 @@
         billingCycle = cycle;
         document.getElementById('btn-monthly').classList.toggle('active', cycle === 'monthly');
         document.getElementById('btn-yearly').classList.toggle('active', cycle === 'yearly');
-        const prices = cycle === 'monthly' ? ['$19.99','$39.99','$79.99'] : ['$59.99/yr','$119.99/yr','$159.99/yr'];
-        document.querySelectorAll('.price-label').forEach((el,i)=> el.innerText = prices[i]);
+        const prices = {
+            monthly:['$19.99','$39.99','$79.99'],
+            yearly:['$59.99/yr','$119.99/yr','$159.99/yr']
+        };
+        document.querySelectorAll('.price-label').forEach((el,i)=>{ el.innerText = prices[cycle][i]; });
+    }
+
+    function showPage(id){
+        document.querySelectorAll('.page-view').forEach(p=>p.classList.add('hidden'));
+        document.getElementById(id).classList.remove('hidden');
+        window.scrollTo(0,0);
     }
 
     function selectTier(tier,el){
@@ -525,97 +724,249 @@
         
         if(name.length > 1 && email.includes('@') && details.length > 5 && window.currentUser){
             document.getElementById('paypal-button-container').classList.add('active');
-            authStatus.innerText = "Logged in as " + window.currentUser.email;
+            authStatus.innerHTML = "Logged in as " + window.currentUser.email;
         } else {
             document.getElementById('paypal-button-container').classList.remove('active');
-            authStatus.innerHTML = window.currentUser ? "Complete fields to enable PayPal" : `<a id="authLink" onclick="showPage('auth-page')">Please log in to purchase</a>`;
+            if(!window.currentUser) {
+                authStatus.innerHTML = `<a id="authLink" onclick="showPage('auth-page')">Please log in to purchase</a>`;
+            } else {
+                authStatus.innerHTML = "Complete fields to enable PayPal";
+            }
         }
     }
+
+    function sendSupportMessage(event){
+        event.preventDefault();
+        const payload = {
+            embeds:[{
+                title:"📩 NEW SUPPORT TICKET",
+                color:3447003,
+                fields:[
+                    {name:"Project", value:document.getElementById('supportProjectName').value},
+                    {name:"Email", value:document.getElementById('supportEmail').value},
+                    {name:"Issue", value:document.getElementById('supportDescription').value}
+                ],
+                footer: { text: "OG Websites Support System" },
+                timestamp: new Date()
+            }]
+        };
+        fetch(SUPPORT_WEBHOOK,{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify(payload)
+        }).then(() => {
+            alert("Ticket Submitted!");
+            showPage('main-page');
+        });
+    }
+
+    function cancelSubscription(){
+        localStorage.removeItem('activeSubscription');
+        document.getElementById('profileCancelSub').style.display = 'none';
+        alert("Subscription cancelled.");
+    }
+
+    function togglePasswordVisibility() {
+        const passwordInput = document.getElementById('authPassword');
+        const toggleBtn = document.getElementById('togglePasswordBtn');
+        
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            toggleBtn.innerText = 'HIDE';
+        } else {
+            passwordInput.type = 'password';
+            toggleBtn.innerText = 'SHOW';
+        }
+    }
+
+    function togglePasswordVisibilityId(inputId, btnId) {
+        const passwordInput = document.getElementById(inputId);
+        const toggleBtn = document.getElementById(btnId);
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            toggleBtn.innerText = 'HIDE';
+        } else {
+            passwordInput.type = 'password';
+            toggleBtn.innerText = 'SHOW';
+        }
+    }
+
+    paypal.Buttons({
+        createSubscription:function(data,actions){
+            const planIds = {
+                monthly:{ Basic:"P-69P3981420001113SNH5YMUI", Advanced:"P-3XB82390WU7228036NH5Y2IQ", Premium:"P-3W021136F9626704VNH5Y3QI" },
+                yearly:{ Basic:"P-99C129587B2750623NH6J6IA", Advanced:"P-52M46233MR674514ENH6J75I", Premium:"P-6U140429FU673050NNH6KBBQ" }
+            };
+            return actions.subscription.create({'plan_id': planIds[billingCycle][currentTier]});
+        },
+        onApprove:function(data,actions){
+            const payload = {
+                embeds:[{
+                    title:"💰 NEW ORDER RECEIVED",
+                    color:5763719,
+                    fields:[
+                        {name:"Client Name", value:document.getElementById('clientName').value, inline: true},
+                        {name:"Client Email", value:document.getElementById('clientEmail').value, inline: true},
+                        {name:"Plan", value:`${currentTier} (${billingCycle})`, inline: true},
+                        {name:"Project Details", value:document.getElementById('projectDetails').value},
+                        {name:"Subscription ID", value:data.subscriptionID},
+                        {name:"Firebase UID", value: window.currentUser ? window.currentUser.uid : "N/A"}
+                    ],
+                    timestamp: new Date()
+                }]
+            };
+            fetch(ORDER_WEBHOOK,{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) })
+            .then(() => {
+                localStorage.setItem('activeSubscription', data.subscriptionID);
+                alert("Order Successful!");
+            });
+        }
+    }).render('#paypal-button-container');
 </script>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { 
         getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, 
-        signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged 
+        signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, updatePassword,
+        fetchSignInMethodsForEmail
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAvDL798yfZgVaj-Gpj3C38CMpVsKZpj2I",
         authDomain: "og-web-16fd3.firebaseapp.com",
         projectId: "og-web-16fd3",
-        storageBucket: "og-web-16fd3.firebasestorage.app",
-        messagingSenderId: "573418258528",
-        appId: "1:573418258528:web:97a57ebe52039773b4c305"
+        storageBucket: "og-web-16fd3.appspot.com",
+        messagingSenderId: "333284000305",
+        appId: "1:333284000305:web:58be31e349282362077e60"
     };
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
-    const provider = new GoogleAuthProvider();
+    const googleProvider = new GoogleAuthProvider();
 
-    // EXPOSE TO WINDOW
-    window.signupUser = async () => {
-        const email = document.getElementById('authEmail').value.trim();
-        const password = document.getElementById('authPassword').value;
-
-        if(!email.endsWith('@gmail.com')){ alert("Gmail only."); return; }
-        if(password.length < 6){ alert("Password too short."); return; }
-
-        try {
-            await createUserWithEmailAndPassword(auth, email, password);
-            alert("Account Created!");
-            showPage('main-page');
-        } catch (e) {
-            if(e.code === 'auth/email-already-in-use'){
-                alert("Account already exists. Please login.");
-            } else {
-                alert(e.message);
-            }
-        }
-    };
-
-    window.loginUser = async () => {
-        const email = document.getElementById('authEmail').value.trim();
-        const password = document.getElementById('authPassword').value;
-        try {
-            await signInWithEmailAndPassword(auth, email, password);
-            showPage('main-page');
-        } catch (e) { alert("Invalid credentials."); }
-    };
-
-    window.loginWithGoogle = async () => {
-        try {
-            await signInWithPopup(auth, provider);
-            showPage('main-page');
-        } catch (e) { alert("Google login failed."); }
-    };
-
-    window.logoutUser = () => signOut(auth).then(() => location.reload());
+    window.currentUser = null;
 
     onAuthStateChanged(auth, (user) => {
         window.currentUser = user;
-        document.getElementById('nav-auth-btn').classList.toggle('hidden', !!user);
-        document.getElementById('nav-profile-btn').classList.toggle('hidden', !user);
-        if(user){
+        const navAuthBtn = document.getElementById('nav-auth-btn');
+        const navProfileBtn = document.getElementById('nav-profile-btn');
+        
+        if (user) {
+            navAuthBtn.classList.add('hidden');
+            navProfileBtn.classList.remove('hidden');
             document.getElementById('displayEmail').innerText = user.email;
-            document.getElementById('displayUid').innerText = "UID: " + user.uid;
+            document.getElementById('displayUid').innerText = `UID: ${user.uid}`;
+            
+            if(localStorage.getItem('activeSubscription')) {
+                document.getElementById('profileCancelSub').style.display = 'block';
+            }
+        } else {
+            navAuthBtn.classList.remove('hidden');
+            navProfileBtn.classList.add('hidden');
         }
-        checkSilentValidation();
+        if(typeof checkSilentValidation === "function") checkSilentValidation();
     });
-</script>
 
-<script>
-    // PayPal Integration
-    paypal.Buttons({
-        createSubscription: (data, actions) => {
-            const plans = {
-                monthly: { Basic:"P-69P3981420001113SNH5YMUI", Advanced:"P-3XB82390WU7228036NH5Y2IQ", Premium:"P-3W021136F9626704VNH5Y3QI" },
-                yearly: { Basic:"P-99C129587B2750623NH6J6IA", Advanced:"P-52M46233MR674514ENH6J75I", Premium:"P-6U140429FU673050NNH6KBBQ" }
-            };
-            return actions.subscription.create({'plan_id': plans[billingCycle][currentTier]});
-        },
-        onApprove: (data) => alert("Payment Successful! ID: " + data.subscriptionID)
-    }).render('#paypal-button-container');
+    // --- Google Auth Flow Logic ---
+    window.loginWithGoogle = async () => {
+        try {
+            // Step 1: Sign in with Google
+            const result = await signInWithPopup(auth, googleProvider);
+            const user = result.user;
+            const email = user.email;
+
+            // Step 2: Check if user already exists
+            const methods = await fetchSignInMethodsForEmail(auth, email);
+            
+            // Hide initial inputs
+            document.getElementById('auth-inputs-container').classList.add('hidden');
+
+            if (methods.length > 0) {
+                // USER EXISTS: Show the two options (Update or Continue)
+                document.getElementById('google-existing-container').classList.remove('hidden');
+            } else {
+                // NEW USER: Require password creation
+                document.getElementById('google-new-container').classList.remove('hidden');
+            }
+        } catch (error) {
+            alert("Google Sign-In Error: " + error.message);
+        }
+    };
+
+    window.continueWithOldPassword = () => {
+        alert("Welcome back!");
+        showPage('main-page');
+        window.resetAuthUI();
+    };
+
+    window.showGooglePasswordUpdate = () => {
+        document.getElementById('google-existing-container').classList.add('hidden');
+        document.getElementById('google-update-container').classList.remove('hidden');
+    };
+
+    window.saveGoogleUpdatedPassword = async () => {
+        const newPass = document.getElementById('googleUpdatePassword').value;
+        if (newPass.length < 6) return alert("Password must be at least 6 characters!");
+        
+        try {
+            await updatePassword(auth.currentUser, newPass);
+            alert("Password updated successfully!");
+            showPage('main-page');
+            window.resetAuthUI();
+        } catch (error) {
+            alert("Error updating password: " + error.message);
+        }
+    };
+
+    window.saveGoogleNewPassword = async () => {
+        const newPass = document.getElementById('googleNewPassword').value;
+        if (newPass.length < 6) return alert("Please set a password of at least 6 characters.");
+        
+        try {
+            await updatePassword(auth.currentUser, newPass);
+            alert("Password set! Your account is ready.");
+            showPage('main-page');
+            window.resetAuthUI();
+        } catch (error) {
+            alert("Error setting password: " + error.message);
+        }
+    };
+
+    window.resetAuthUI = () => {
+        document.getElementById('auth-inputs-container').classList.remove('hidden');
+        document.getElementById('google-existing-container').classList.add('hidden');
+        document.getElementById('google-new-container').classList.add('hidden');
+        document.getElementById('google-update-container').classList.add('hidden');
+    };
+
+    window.logoutUser = () => {
+        signOut(auth).then(() => {
+            alert("Logged out successfully");
+            showPage('main-page');
+            window.resetAuthUI();
+        });
+    };
+
+    window.signupUser = async () => {
+        const email = document.getElementById('authEmail').value;
+        const pass = document.getElementById('authPassword').value;
+        try {
+            await createUserWithEmailAndPassword(auth, email, pass);
+            alert("Account Created!");
+            showPage('main-page');
+        } catch(e) { alert(e.message); }
+    };
+
+    window.loginUser = async () => {
+        const email = document.getElementById('authEmail').value;
+        const pass = document.getElementById('authPassword').value;
+        try {
+            await signInWithEmailAndPassword(auth, email, pass);
+            alert("Logged In!");
+            showPage('main-page');
+        } catch(e) { alert(e.message); }
+    };
 </script>
 
 </body>
