@@ -142,7 +142,7 @@
         }
 
         .hidden{
-            display:none;
+            display:none !important;
         }
 
         header{
@@ -298,7 +298,6 @@
             cursor: not-allowed;
         }
 
-        /* Password Show/Hide Toggle Button Styles */
         .password-toggle {
             position: absolute;
             right: 15px;
@@ -320,7 +319,7 @@
         }
 
         .auth-input-container-with-toggle input {
-            padding-right: 4.5rem; /* Prevents text overlaps with the toggle button */
+            padding-right: 4.5rem;
         }
 
         #paypal-button-container{
@@ -592,7 +591,7 @@
             
             <div class="input-wrapper auth-input-container-with-toggle">
                 <input type="password" id="authPassword" placeholder="Password (min. 6 chars)">
-                <button type="button" class="password-toggle" id="togglePasswordBtn" onclick="togglePasswordVisibility()">SHOW</button>
+                <button type="button" class="password-toggle" id="togglePasswordBtn" onclick="togglePasswordVisibility('authPassword', 'togglePasswordBtn')">SHOW</button>
             </div>
             
             <button class="submit-btn" id="signup-btn" style="margin-bottom:1rem;" onclick="signupUser()">Sign Up</button>
@@ -605,15 +604,29 @@
         </div>
 
         <div id="verification-container" class="hidden" style="margin-top: 1rem;">
-            <div class="auth-divider"><span>VERIFICATION REQUIRED</span><hr></div>
-            <p style="color: var(--text-dim); text-align: center; margin-bottom: 1rem; font-size: 0.9rem;">
-                Enter the one-time 6-digit security code sent to your email.
-            </p>
-            <div class="input-wrapper">
-                <input type="text" id="verificationCodeInput" placeholder="Enter 6-Digit Code" maxlength="6" style="text-align: center; font-size: 1.5rem; letter-spacing: 5px;">
+            <div id="otp-input-section">
+                <div class="auth-divider"><span>VERIFICATION REQUIRED</span><hr></div>
+                <p style="color: var(--text-dim); text-align: center; margin-bottom: 1rem; font-size: 0.9rem;">
+                    Enter the one-time 6-digit security code sent to your email.
+                </p>
+                <div class="input-wrapper">
+                    <input type="text" id="verificationCodeInput" placeholder="Enter 6-Digit Code" maxlength="6" style="text-align: center; font-size: 1.5rem; letter-spacing: 5px;">
+                </div>
+                <button class="submit-btn" id="verify-code-btn" style="background: #00ff88; color: #000; margin-bottom:1rem;">Verify & Proceed</button>
+                <button class="submit-btn" style="background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--glass-border);" onclick="cancelVerificationFlow()">Cancel</button>
             </div>
-            <button class="submit-btn" id="verify-code-btn" style="background: #00ff88; color: #000; margin-bottom:1rem;">Verify & Proceed</button>
-            <button class="submit-btn" style="background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--glass-border);" onclick="cancelVerificationFlow()">Cancel</button>
+
+            <div id="set-password-container" class="hidden">
+                <div class="auth-divider"><span>SET PASSWORD</span><hr></div>
+                <p style="color: var(--text-dim); text-align: center; margin-bottom: 1rem; font-size: 0.9rem;">
+                    Please create a password for your new account to finish setting it up.
+                </p>
+                <div class="input-wrapper auth-input-container-with-toggle">
+                    <input type="password" id="newGooglePassword" placeholder="New Password (min. 6 chars)">
+                    <button type="button" class="password-toggle" id="toggleNewPasswordBtn" onclick="togglePasswordVisibility('newGooglePassword', 'toggleNewPasswordBtn')">SHOW</button>
+                </div>
+                <button class="submit-btn" id="save-google-password-btn" style="background: #00d2ff; color: #000;">Save Password & Finish</button>
+            </div>
         </div>
     </div>
 </main>
@@ -736,10 +749,9 @@
         alert("Subscription cancelled.");
     }
 
-    // Interactive Toggle Logic Function
-    function togglePasswordVisibility() {
-        const passwordInput = document.getElementById('authPassword');
-        const toggleBtn = document.getElementById('togglePasswordBtn');
+    function togglePasswordVisibility(inputId, buttonId) {
+        const passwordInput = document.getElementById(inputId);
+        const toggleBtn = document.getElementById(buttonId);
         
         if (passwordInput.type === 'password') {
             passwordInput.type = 'text';
@@ -787,7 +799,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { 
         getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, 
-        signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged
+        signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, updatePassword
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
     const firebaseConfig = {
@@ -808,11 +820,31 @@
 
     let generatedCode = null;
     let pendingAction = null; 
+    let isGoogleFlow = false; // Tracks whether authorization came via OAuth
 
     const EMAILJS_SERVICE_ID = "service_h4rczgj";
     const EMAILJS_TEMPLATE_ID = "template_5mf0dpa";
 
-    // GLOBAL LOGOUT FUNCTION (Auto-Refresh)
+    // Dynamic state listener
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            window.currentUser = user;
+            document.getElementById('nav-auth-btn').classList.add('hidden');
+            document.getElementById('nav-profile-btn').classList.remove('hidden');
+            document.getElementById('displayEmail').innerText = user.email;
+            document.getElementById('displayUid').innerText = "UID: " + user.uid;
+            
+            if (localStorage.getItem('activeSubscription')) {
+                document.getElementById('profileCancelSub').style.display = 'block';
+            }
+        } else {
+            window.currentUser = null;
+            document.getElementById('nav-auth-btn').classList.remove('hidden');
+            document.getElementById('nav-profile-btn').classList.add('hidden');
+        }
+        checkSilentValidation();
+    });
+
     window.logoutUser = () => {
         signOut(auth)
             .then(() => {
@@ -826,15 +858,18 @@
         pendingAction = actionCallback;
         document.getElementById('auth-inputs-container').classList.add('hidden');
         document.getElementById('verification-container').classList.remove('hidden');
+        document.getElementById('otp-input-section').classList.remove('hidden');
+        document.getElementById('set-password-container').classList.add('hidden');
         document.getElementById('verificationCodeInput').value = "";
     };
 
     window.cancelVerificationFlow = () => {
-        if(auth.currentUser) {
+        if(auth.currentUser && isGoogleFlow) {
             auth.currentUser.delete().catch(() => {});
         }
         generatedCode = null;
         pendingAction = null;
+        isGoogleFlow = false;
         document.getElementById('verification-container').classList.add('hidden');
         document.getElementById('auth-inputs-container').classList.remove('hidden');
     };
@@ -842,11 +877,41 @@
     document.getElementById('verify-code-btn').onclick = () => {
         const userInput = document.getElementById('verificationCodeInput').value.trim();
         if (userInput === String(generatedCode)) {
-            if (typeof pendingAction === "function") {
-                pendingAction();
+            if (isGoogleFlow) {
+                // If Google authentication flow, transition to set password view rather than direct submission
+                document.getElementById('otp-input-section').classList.add('hidden');
+                document.getElementById('set-password-container').classList.remove('hidden');
+            } else {
+                if (typeof pendingAction === "function") {
+                    pendingAction();
+                }
             }
         } else {
             alert("Invalid security code.");
+        }
+    };
+
+    // Handler triggered when saving a new password for newly-linked Google Profiles
+    document.getElementById('save-google-password-btn').onclick = () => {
+        const newPassword = document.getElementById('newGooglePassword').value;
+        if (newPassword.length < 6) {
+            alert("Password must be at least 6 characters.");
+            return;
+        }
+
+        if (auth.currentUser) {
+            updatePassword(auth.currentUser, newPassword)
+                .then(() => {
+                    alert("Account setup complete!");
+                    isGoogleFlow = false;
+                    showPage('main-page');
+                })
+                .catch((err) => {
+                    alert("Error saving password: " + err.message);
+                });
+        } else {
+            alert("Session lost. Please try logging in again.");
+            window.location.reload();
         }
     };
 
@@ -864,6 +929,9 @@
     window.loginUser = () => {
         const e = document.getElementById('authEmail').value.trim();
         const p = document.getElementById('authPassword').value;
+        if(!e || !p) return alert("Please fill out all fields.");
+        
+        isGoogleFlow = false;
         signInWithEmailAndPassword(auth, e, p)
             .then(() => {
                 const targetEmail = auth.currentUser.email;
@@ -879,47 +947,39 @@
     window.signupUser = () => {
         const e = document.getElementById('authEmail').value.trim();
         const p = document.getElementById('authPassword').value;
-        if(!isGmail(e)){ alert("Gmail only."); return; }
-        if(p.length < 6){ alert("Password too short."); return; }
+        if(!e || !p) return alert("Please fill out all fields.");
+        if(!isGmail(e)) return alert("Only @gmail.com accounts are allowed.");
 
+        isGoogleFlow = false;
         createUserWithEmailAndPassword(auth, e, p)
             .then(() => {
-                sendOtpEmail(e, () => { showPage('main-page'); });
-            })
-            .catch((error) => alert(error.message));
-    };
-
-    window.loginWithGoogle = () => {
-        signInWithPopup(auth, googleProvider)
-            .then((result) => {
-                const targetEmail = result.user.email; 
                 signOut(auth).then(() => {
-                    sendOtpEmail(targetEmail, () => {
-                        signInWithPopup(auth, googleProvider).then(() => showPage('main-page'));
+                    sendOtpEmail(e, () => {
+                        signInWithEmailAndPassword(auth, e, p).then(() => showPage('main-page'));
                     });
                 });
             })
             .catch(err => alert(err.message));
     };
 
-    onAuthStateChanged(auth, (user) => {
-        window.currentUser = user;
-        const clientEmailInput = document.getElementById('clientEmail');
-        
-        if (user) {
-            document.getElementById('nav-auth-btn').classList.add('hidden');
-            document.getElementById('nav-profile-btn').classList.remove('hidden');
-            document.getElementById('displayEmail').innerText = user.email;
-            document.getElementById('displayUid').innerText = "UID: " + user.uid;
-            
-            // Set order email field and lock it down
-            if (clientEmailInput) {
-                clientEmailInput.value = user.email;
-                clientEmailInput.setAttribute('readonly', true);
-            }
-            checkSilentValidation();
-        }
-    });
+    window.loginWithGoogle = () => {
+        isGoogleFlow = true;
+        signInWithPopup(auth, googleProvider)
+            .then((result) => {
+                const email = result.user.email;
+                if (!isGmail(email)) {
+                    alert("Only @gmail.com accounts are permitted.");
+                    result.user.delete().then(() => signOut(auth));
+                    return;
+                }
+                // Send verification code; when confirmed, user is prompted to set password
+                sendOtpEmail(email, null);
+            })
+            .catch((err) => {
+                alert(err.message);
+            });
+    };
 </script>
+
 </body>
 </html>
