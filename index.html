@@ -849,207 +849,111 @@
 
     let generatedCode = null;
     let pendingAction = null; 
-    let googleUserRef = null; // Stash user info safely during configuration selection
 
-    const EMAILJS_SERVICE_ID = "service_h4rczgj";
-    const EMAILJS_TEMPLATE_ID = "template_5mf0dpa";
-
-    window.logoutUser = () => {
-        signOut(auth)
-            .then(() => {
-                window.location.reload(); 
-            })
-            .catch((err) => alert(err.message));
-    };
-
-    window.showVerificationUI = (code, actionCallback) => {
-        generatedCode = code;
-        pendingAction = actionCallback;
-        document.getElementById('auth-inputs-container').classList.add('hidden');
-        document.getElementById('verification-container').classList.remove('hidden');
-        document.getElementById('verificationCodeInput').value = "";
-    };
-
-    window.cancelVerificationFlow = () => {
-        if(auth.currentUser) {
-            auth.currentUser.delete().catch(() => {});
-        }
-        generatedCode = null;
-        pendingAction = null;
-        document.getElementById('verification-container').classList.add('hidden');
-        document.getElementById('auth-inputs-container').classList.remove('hidden');
-    };
-
-    document.getElementById('verify-code-btn').onclick = () => {
-        const userInput = document.getElementById('verificationCodeInput').value.trim();
-        if (userInput === String(generatedCode)) {
-            if (typeof pendingAction === "function") {
-                pendingAction();
-            }
-        } else {
-            alert("Invalid security code.");
-        }
-    };
-
-    const sendOtpEmail = (emailTarget, callback) => {
-        const code = Math.floor(100000 + Math.random() * 900000);
-        const templateParams = { to_email: emailTarget, email: emailTarget, code: code };
-        emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams)
-            .then(() => { window.showVerificationUI(code, callback); })
-            .catch((err) => {
-                alert("Email failed: " + err.text);
-                if(auth.currentUser) auth.currentUser.delete().catch(() => {});
-            });
-    };
-
-    window.loginUser = () => {
-        const e = document.getElementById('authEmail').value.trim();
-        const p = document.getElementById('authPassword').value;
-        signInWithEmailAndPassword(auth, e, p)
-            .then(() => {
-                const targetEmail = auth.currentUser.email;
-                signOut(auth).then(() => {
-                    sendOtpEmail(targetEmail, () => {
-                        signInWithEmailAndPassword(auth, e, p).then(() => showPage('main-page'));
-                    });
-                });
-            })
-            .catch(err => alert(err.message));
-    };
-
-    window.signupUser = () => {
-        const e = document.getElementById('authEmail').value.trim();
-        const p = document.getElementById('authPassword').value;
-
-        if (!isGmail(e)) {
-            alert("Registration is restricted to @gmail.com domains only.");
-            return;
-        }
-        if (p.length < 6) {
-            alert("Password must be at least 6 characters long.");
-            return;
-        }
-
-        // Send OTP first before officially creating the backend account configuration
-        sendOtpEmail(e, () => {
-            createUserWithEmailAndPassword(auth, e, p)
-                .then(() => {
-                    alert("Account registered successfully!");
-                    showPage('main-page');
-                })
-                .catch(err => alert(err.message));
-        });
-    };
-
-    // --- NEW GOOGLE SIGN IN LOGIC HANDLERS ---
-
-    window.loginWithGoogle = () => {
-        signInWithPopup(auth, googleProvider)
-            .then((result) => {
-                const isNewUser = result._tokenResponse.isNewUser;
-                googleUserRef = result.user;
-
-                // Hide basic menu options
-                document.getElementById('auth-inputs-container').classList.add('hidden');
-
-                if (isNewUser) {
-                    // Scenario: User does not have an account -> Prompt for new password
-                    document.getElementById('google-new-container').classList.remove('hidden');
-                } else {
-                    // Scenario: User already has an account -> Offer the 2 required paths
-                    document.getElementById('google-existing-container').classList.remove('hidden');
-                }
-            })
-            .catch((err) => {
-                alert("Google sign-in failed: " + err.message);
-                cancelGoogleFlow();
-            });
-    };
-
-    window.continueWithOldPassword = () => {
-        alert("Welcome back!");
-        resetGoogleFlowUIVisibility();
-        showPage('main-page');
-    };
-
-    window.showGooglePasswordUpdate = () => {
-        document.getElementById('google-existing-container').classList.add('hidden');
-        document.getElementById('google-update-container').classList.remove('hidden');
-    };
-
-    window.saveGoogleUpdatedPassword = () => {
-        const newPassword = document.getElementById('googleUpdatePassword').value;
-        if (newPassword.length < 6) {
-            alert("Password must be at least 6 characters.");
-            return;
-        }
-
-        updatePassword(googleUserRef, newPassword)
-            .then(() => {
-                alert("Password updated successfully!");
-                resetGoogleFlowUIVisibility();
-                showPage('main-page');
-            })
-            .catch((err) => alert("Error updating password: " + err.message));
-    };
-
-    window.saveGoogleNewPassword = () => {
-        const newPassword = document.getElementById('googleNewPassword').value;
-        if (newPassword.length < 6) {
-            alert("Password must be at least 6 characters.");
-            return;
-        }
-
-        updatePassword(googleUserRef, newPassword)
-            .then(() => {
-                alert("Account secured with password successfully!");
-                resetGoogleFlowUIVisibility();
-                showPage('main-page');
-            })
-            .catch((err) => alert("Error saving password: " + err.message));
-    };
-
-    window.cancelGoogleFlow = () => {
-        signOut(auth).then(() => {
-            resetGoogleFlowUIVisibility();
-        });
-    };
-
-    function resetGoogleFlowUIVisibility() {
-        document.getElementById('google-existing-container').classList.add('hidden');
-        document.getElementById('google-new-container').classList.add('hidden');
-        document.getElementById('google-update-container').classList.add('hidden');
-        document.getElementById('auth-inputs-container').classList.remove('hidden');
-        googleUserRef = null;
-    }
-
-    // --- APPLICATION RUNTIME LISTENERS ---
-
+    // Handle Auth changes across interface sections
     onAuthStateChanged(auth, (user) => {
         window.currentUser = user;
         const navAuthBtn = document.getElementById('nav-auth-btn');
         const navProfileBtn = document.getElementById('nav-profile-btn');
-
+        
         if (user) {
-            if (navAuthBtn) navAuthBtn.classList.add('hidden');
-            if (navProfileBtn) navProfileBtn.classList.remove('hidden');
+            navAuthBtn.classList.add('hidden');
+            navProfileBtn.classList.remove('hidden');
+            document.getElementById('displayEmail').innerText = user.email;
+            document.getElementById('displayUid').innerText = "UID: " + user.uid;
             
-            const displayEmail = document.getElementById('displayEmail');
-            const displayUid = document.getElementById('displayUid');
-            if (displayEmail) displayEmail.innerText = user.email;
-            if (displayUid) displayUid.innerText = "UID: " + user.uid;
-
-            if (localStorage.getItem('activeSubscription')) {
-                const cancelBtn = document.getElementById('profileCancelSub');
-                if (cancelBtn) cancelBtn.style.display = 'block';
+            if(localStorage.getItem('activeSubscription')){
+                document.getElementById('profileCancelSub').style.display = 'block';
             }
         } else {
-            if (navAuthBtn) navAuthBtn.classList.remove('hidden');
-            if (navProfileBtn) navProfileBtn.classList.add('hidden');
+            navAuthBtn.classList.remove('hidden');
+            navProfileBtn.classList.add('hidden');
+            document.getElementById('profileCancelSub').style.display = 'none';
         }
         checkSilentValidation();
     });
-</script>
 
+    // Clean execution block for standard registration
+    window.signupUser = async function() {
+        const email = document.getElementById('authEmail').value.trim();
+        const password = document.getElementById('authPassword').value;
+        const signupBtn = document.getElementById('signup-btn');
+
+        if (!isGmail(email)) {
+            alert("Registration requires a valid @gmail.com account.");
+            return;
+        }
+        if (password.length < 6) {
+            alert("Password validation failed: minimum length is 6 characters.");
+            return;
+        }
+
+        signupBtn.disabled = true;
+        signupBtn.innerText = "Processing registration...";
+
+        try {
+            await createUserWithEmailAndPassword(auth, email, password);
+            alert("Account provisioned successfully!");
+            showPage('main-page');
+        } catch (error) {
+            console.error("Signup validation failure:", error.code, error.message);
+            
+            // Intercepting duplicate addresses directly from backend handler
+            if (error.code === 'auth/email-already-in-use') {
+                alert("This Gmail address is already registered to an account. Please use 'Login' instead.");
+            } else {
+                alert(`Registration failed: ${error.message}`);
+            }
+        } finally {
+            signupBtn.disabled = false;
+            signupBtn.innerText = "Sign Up";
+        }
+    }
+
+    window.loginUser = async function() {
+        const email = document.getElementById('authEmail').value.trim();
+        const password = document.getElementById('authPassword').value;
+        const loginBtn = document.getElementById('login-btn');
+
+        if (!email || !password) {
+            alert("Please fill in all authentication fields.");
+            return;
+        }
+
+        loginBtn.disabled = true;
+        loginBtn.innerText = "Validating...";
+
+        try {
+            await signInWithEmailAndPassword(auth, email, password);
+            alert("Logged in successfully!");
+            showPage('main-page');
+        } catch (error) {
+            alert(`Authentication failed: ${error.message}`);
+        } finally {
+            loginBtn.disabled = false;
+            loginBtn.innerText = "Login";
+        }
+    }
+
+    window.loginWithGoogle = async function() {
+        try {
+            await signInWithPopup(auth, googleProvider);
+            alert("Google access authorized successfully.");
+            showPage('main-page');
+        } catch (error) {
+            alert(`Google authentication cancelled or failed: ${error.message}`);
+        }
+    }
+
+    window.logoutUser = async function() {
+        try {
+            await signOut(auth);
+            alert("Logged out successfully.");
+            showPage('main-page');
+        } catch (error) {
+            alert("Error trying to process your sign-out transaction.");
+        }
+    }
+</script>
 </body>
 </html>
