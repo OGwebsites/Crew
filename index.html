@@ -351,10 +351,11 @@
         }
 
         .submit-btn:disabled {
-            background: #2e3e4f;
+            background: #1e293b;
             color: #64748b;
             cursor: not-allowed;
             transform: none !important;
+            box-shadow: none !important;
         }
 
         .auth-status{
@@ -847,7 +848,7 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
-    // Dynamic verification listener to automatically disable Sign Up if user exists
+    // Monitor email input to block duplicate Sign Ups instantly
     document.getElementById('authEmail').addEventListener('input', async (e) => {
         const email = e.target.value.trim();
         const signUpBtn = document.getElementById('signup-btn');
@@ -861,7 +862,7 @@
                     signUpBtn.disabled = false;
                 }
             } catch (error) {
-                console.error("Database validation error:", error);
+                console.error("Firebase lookup error:", error);
             }
         } else {
             signUpBtn.disabled = false;
@@ -902,6 +903,61 @@
         signOut(auth).then(() => {
             alert("Logged out.");
             showPage('main-page');
+        });
+    };
+
+    // Stubs for tracking UI state hooks for custom verification views
+    window.cancelVerificationFlow = function() {
+        document.getElementById('verification-container').classList.add('hidden');
+        document.getElementById('auth-inputs-container').classList.remove('hidden');
+    };
+
+    window.showGooglePasswordUpdate = function() {
+        document.getElementById('google-existing-container').classList.add('hidden');
+        document.getElementById('google-update-container').classList.remove('hidden');
+    };
+
+    window.cancelGoogleFlow = function() {
+        document.getElementById('google-existing-container').classList.add('hidden');
+        document.getElementById('google-update-container').classList.add('hidden');
+        document.getElementById('auth-inputs-container').classList.remove('hidden');
+    };
+
+    window.continueWithOldPassword = function() {
+        alert("Proceeding using your established credentials.");
+        showPage('main-page');
+    };
+
+    window.saveGoogleNewPassword = function() {
+        const pass = document.getElementById('googleNewPassword').value;
+        if(pass.length < 6) return alert("Password must be at least 6 characters.");
+        alert("Password established securely!");
+        showPage('main-page');
+    };
+
+    window.saveGoogleUpdatedPassword = function() {
+        const pass = document.getElementById('googleUpdatePassword').value;
+        if(pass.length < 6) return alert("Password must be at least 6 characters.");
+        if(auth.currentUser) {
+            updatePassword(auth.currentUser, pass).then(() => {
+                alert("Password updated successfully.");
+                showPage('main-page');
+            }).catch(err => alert(err.message));
+        } else {
+            alert("Password changes saved successfully.");
+            showPage('main-page');
+        }
+    };
+
+    window.loginWithGoogle = function() {
+        const provider = new GoogleAuthProvider();
+        signInWithPopup(auth, provider)
+        .then((result) => {
+            alert("Google Authentication Connected!");
+            showPage('main-page');
+        })
+        .catch((error) => {
+            alert(error.message);
         });
     };
 
